@@ -1,0 +1,5 @@
+<launch>
+    <node pkg = "Cameras" type="publisher_node" name="video_publisher" output="screen"/>
+    <node pkg = "Cameras" type="Subscriber_Node1" name="video_subscriber1" output="screen"/>
+    <node pkg = "Cameras" type="Subscriber_Node2" name="video_subscriber2" output="screen"/>
+</launch>
