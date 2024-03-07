@@ -1,0 +1,8 @@
+prefix=/home/wh0p3/surface_comp_wks/install
+
+Name: custom_msgs
+Description: Description of custom_msgs
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: 

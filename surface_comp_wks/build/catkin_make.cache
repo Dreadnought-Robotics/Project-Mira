@@ -1,0 +1,2 @@
+custom_msgs:ros_calib:rov_joystick
+-DCATKIN_DEVEL_PREFIX=/home/wh0p3/surface_comp_wks/devel -DCMAKE_INSTALL_PREFIX=/home/wh0p3/surface_comp_wks/install -G Unix Makefiles

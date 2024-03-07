@@ -1,0 +1,47 @@
+camera_matrix:
+  data: !!python/tuple
+  - 762.8807728326791
+  - 0.0
+  - 403.6387967638918
+  - 0.0
+  - 1019.809917001701
+  - 238.24492880223065
+  - 0.0
+  - 0.0
+  - 1.0
+camera_name: my_camera_node
+distortion_coefficients:
+  data: !!python/tuple
+  - 0.7018498004799864
+  - -0.3945206282415473
+  - 0.004496082658468479
+  - 0.10723508735042718
+  - 0.0
+distortion_model: plumb_bob
+image_height: 480
+image_width: 640
+projection_matrix:
+  data: !!python/tuple
+  - 811.7470703125
+  - 0.0
+  - 425.665790248604
+  - 0.0
+  - 0.0
+  - 1150.89404296875
+  - 238.65852884800552
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+  - 0.0
+rectification_matrix:
+  data: !!python/tuple
+  - 1.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 1.0
