@@ -1,8 +1,0 @@
-prefix=/home/wh0p3/surface_comp_wks/install
-
-Name: ros_calib
-Description: Description of ros_calib
-Version: 0.0.0
-Cflags: 
-Libs: -L${prefix}/lib 
-Requires: 

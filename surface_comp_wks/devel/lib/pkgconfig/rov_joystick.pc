@@ -1,8 +1,0 @@
-prefix=/home/wh0p3/surface_comp_wks/devel
-
-Name: rov_joystick
-Description: Description of rov_joystick
-Version: 0.0.0
-Cflags: -I/home/wh0p3/surface_comp_wks/src/rov_joystick/include
-Libs: -L${prefix}/lib -lrov_joystick
-Requires: roscpp rospy sensor_msgs std_msgs
