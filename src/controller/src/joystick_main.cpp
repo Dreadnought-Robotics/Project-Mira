@@ -1,19 +1,33 @@
-#include<controller/joystick_utils.hpp>
-#include <ros/ros.h>
-#include<custom_msgs/commands.h>
+#include <controller/joystick_utils.hpp> // Inlude joystick controller header file
+#include <ros/ros.h> 
+#include <custom_msgs/commands.h> // Include custom message header file
 
+/**
+ * @Main function for the joy controller node.
+ * 
+ * Function initializes the ROS node(joy_controller_node), creates a controller object,
+ * and enters a loop to process incoming messages.
+ * 
+ * @param argc Number of command-line arguments
+ * @param argv Array of command-line arguments
+ * @return int Returns 0 upon successful completion
+ */
 
-//run the joy node with:
-// rosrun joy joy_node _autorepeat_rate:=1000 --dev /dev/input/js0 
 int main(int argc, char **argv) {
+    // Initialize ROS node
     ros::init(argc, argv, "joy_controller_node");
     ros::NodeHandle nh;
-    controller obj= controller(nh);
-    
-    while(ros::ok()){
-        ros::spinOnce();
-        //cout << "publishing data";
-        //obj.publish_data();
-        //ROS_INFO("publishing command msg");
+
+    // Create controller object
+    controller obj = controller(nh);
+
+    // While ROS is runnig loop
+    while (ros::ok()) { 
+        ros::spinOnce(); // Process any incoming ROS messages
+
+        // obj.publish_data(); // Publish data
+        // ROS_INFO("Publishing command message");
     }
+    return 0;
 }
+
