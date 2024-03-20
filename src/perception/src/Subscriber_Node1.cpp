@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh;
 
     // Subscribe to the topic publishing compressed images
-    ros::Subscriber sub = nh.subscribe("/video_stream1", 1, imageCallback);
+    ros::Subscriber sub = nh.subscribe("/camera_down/image_raw/compressed", 1, imageCallback);
 
     // Spin until ROS is shutdown
     ros::spin();
