@@ -4,27 +4,28 @@ This repository contains the ROS packages for the AUV2024 Dreadnought Autonomous
 
 ## Overview
 
-- **src**: This folder contains the following ROS packages:
- - **controller**: This package handles the control and navigation systems of the AUV.
- - **perception**: This package deals with sensor data processing and perception algorithms for obstacle detection, mapping, and localization.
+- **src**:
+ - **mira_controller**: This package handles the control and navigation systems of the AUV.
+ - **mira_perception**: This package deals with sensor data processing and perception algorithms for obstacle detection, mapping, and localization.
+ - **mira_docking**: This package contains the code for the docking task.
  - **visualize**: This package provides visualization tools for debugging and monitoring the AUV's state and sensor data.
-- **custom_msgs**: This folder contains custom message definitions for communication between the ROS nodes.
+ - **custom_msgs**: This folder contains custom message definitions for communication between the ROS nodes.
 
 ## Usage
 
-### Controller
+### Setup
 
-To launch the teleoperation node, run the following command:
-This will start the teleoperation node, allowing you to control the AUV manually.
+Before running the packages, add the following lines to your `~/.bashrc` file:
 
-### Perception
+```bash
+export ROS_IP=192.168.2.3
+export ROS_MASTER_URI=http://192.168.2.1:11311
+export ROS_HOSTNAME=192.168.2.1```
 
-The perception package contains two subscriber nodes for processing data from different cameras. The source files for these nodes are located in the `src` directory of the perception package.
+After adding the lines, source your workspace where this repository is cloned:
+```bash
+source /path/to/workspace_name/devel/setup.bash
+```
 
-### Custom Messages
-
-The `custom_msgs` folder contains the following custom message definitions:
-
-- **thruster_commands.msg**: This message type is used to send command values to the Pixhawk flight controller for controlling the thrusters.
-- **criticals.msg**: This message type is used to control the mode of the Pixhawk flight controller.
+Then, build the packages using catkin_make.
 
