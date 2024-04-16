@@ -30,3 +30,30 @@ source /path/to/workspace_name/devel/setup.bash
 
 Then, build the packages using catkin_make.
 
+## Prerequisites
+Before running the code, make sure you have completed the setup steps mentioned in the main README file. This includes setting the ROS environment variables and sourcing the workspace.
+
+## Running the Code
+
+1. **Launch the Perception Node**
+
+  ```bash
+  $ roslaunch mira_perception perception.launch
+  ```
+  This will start the perception nodes responsible for processing sensor data and detecting obstacles, mapping, and localization.
+
+2. **Launch the ROV Node**
+  ```bash
+  $ roslaunch mira_rov rov.launch
+  ```
+  This will launch the Remotely Operated Vehicle (ROV) node, which handles the control and navigation systems of the AUV.
+
+3. **Launch the Docking Node**
+  ```bash
+  $ roslaunch mira_controller controller.launch
+  ```
+  Launch the docking node, which contains the code for the docking task, and kill the ROV node.
+
+
+
+
