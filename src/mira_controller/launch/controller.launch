@@ -1,0 +1,7 @@
+<launch>
+  <node name="controls" pkg="mira_controller" type="controls" output="screen">
+  </node>
+
+  <node pkg="mira_controller" type="key_pub.py" name="key_publisher" output="screen">
+  </node>
+</launch>
