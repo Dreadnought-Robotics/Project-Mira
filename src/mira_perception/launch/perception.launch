@@ -1,0 +1,4 @@
+<launch>
+  <node name="localizer" pkg="mira_perception" type="localizer" output="screen">
+  </node>
+</launch>
