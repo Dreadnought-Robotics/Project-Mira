@@ -44,13 +44,19 @@ Before running the code, make sure you have completed the setup steps mentioned 
 
 2. **Launch the ROV Node**
   ```bash
-  $ roslaunch mira_rov rov.launch
+  $ roslaunch mira_rov teleop.launch
   ```
   This will launch the Remotely Operated Vehicle (ROV) node, which handles the control and navigation systems of the AUV.
 
 3. **Launch the Docking Node**
   ```bash
-  $ roslaunch mira_controller controller.launch
+  $ roslaunch mira_docking dock.launch
+  ```
+  Launch the docking node, which contains the code for the docking task, and kill the ROV node.
+
+4. **Launch the Docking Node**
+  ```bash
+  $ roslaunch mira_docking dock.launch
   ```
   Launch the docking node, which contains the code for the docking task, and kill the ROV node.
 
