@@ -40,13 +40,13 @@ Before running the code, make sure you have completed the setup steps mentioned 
   ```bash
   $ roslaunch mira_perception perception.launch
   ```
-  This will start the perception nodes responsible for processing sensor data and detecting obstacles, mapping, and localization.
+  This will start the perception nodes responsible for subscribing camera topics and publishes Aruco id, waypoints and pose.
 
 2. **Launch the ROV Node**
   ```bash
   $ roslaunch mira_rov teleop.launch
   ```
-  This will launch the Remotely Operated Vehicle (ROV) node, which handles the control and navigation systems of the AUV.
+  This will launch the Remotely Operated Vehicle (ROV) node, to move the AUV using the controller using the joystick. Run this till the Aruco market is detected.
 
 3. **Launch the Docking Node**
   ```bash
@@ -54,11 +54,11 @@ Before running the code, make sure you have completed the setup steps mentioned 
   ```
   Launch the docking node, which contains the code for the docking task, and kill the ROV node.
 
-4. **Launch the Docking Node**
+4. **Launch the Controller Node**
   ```bash
-  $ roslaunch mira_docking dock.launch
+  $ roslaunch mira_controller controller.launch
   ```
-  Launch the docking node, which contains the code for the docking task, and kill the ROV node.
+  Launch the controller node for the AUV to navigate autonomously.
 
 
 
