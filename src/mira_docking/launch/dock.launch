@@ -1,0 +1,4 @@
+<launch>
+  <node name="dock" pkg="mira_docking" type="dock" output="screen">
+  </node>
+</launch>
