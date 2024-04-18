@@ -8,7 +8,7 @@
   </node>
 
   <!-- Start base_joy_controller_node with the same autorepeat_rate argument -->
-  <node pkg="controller" type="joystick" name="joy_controller_node" output="screen">
+  <node pkg="mira_rov" type="joystick" name="joy_controller_node" output="screen">
     <param name="autorepeat_rate" type="double" value="$(arg autorepeat_rate_arg)" />
   </node>
 </launch>
