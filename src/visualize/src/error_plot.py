@@ -1,5 +1,4 @@
 #!usr/bin/env python3
-
 from collections import deque
 
 import matplotlib.pyplot as plt
@@ -17,9 +16,7 @@ class Visualizer:
         self.filtered_data = deque(maxlen=100)
         self.window_size = 5
         self.poly_order = 3
-
         rospy.Subscriber("/docking/errors", Quaternion, self.error_callback)
-
         plt.ion()
         self.fig, self.ax = plt.subplots()
         (self.line1,) = self.ax.plot([], [], "b", label="Original Data")
@@ -27,19 +24,17 @@ class Visualizer:
         self.ax.legend()
 
     def error_callback(self, msg):
-        error = [msg.data[0]]
+        error = [msg.x, msg.y, msg.z, msg.w]
         self.data.append(error)
-
         if len(self.data) >= self.window_size:
             filtered_point = savgol_filter(
-                list(self.data), self.window_size, self.poly_order
+                [d[0] for d in self.data], self.window_size, self.poly_order
             )[-1]
             self.filtered_data.append(filtered_point)
-            self.update_plot()
 
     def update_plot(self):
         self.line1.set_xdata(range(len(self.data)))
-        self.line1.set_ydata(self.data)
+        self.line1.set_ydata([d[0] for d in self.data])
         self.line2.set_xdata(range(len(self.filtered_data)))
         self.line2.set_ydata(self.filtered_data)
         self.ax.relim()
@@ -50,4 +45,9 @@ class Visualizer:
 
 if __name__ == "__main__":
     plotter = Visualizer()
+    rate = rospy.Rate(10)
+    while not rospy.is_shutdown():
+        plotter.update_plot()
+        rate.sleep()
+
     rospy.spin()
