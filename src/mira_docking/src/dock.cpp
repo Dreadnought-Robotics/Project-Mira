@@ -56,9 +56,9 @@ void waypoints_callback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
         }
     }
     geometry_msgs::Quaternion q;
-    q.x = heading_error;
-    q.y = forward_error;
-    q.z = lateral_error;
+    q.w = heading_error;
+    q.x = forward_error;
+    q.y = lateral_error;
     error_pub.publish(q);
 }
 
