@@ -6,11 +6,12 @@
 #define distance_threshold 0.01
 #define theta_threshold 0.01
 ros::Publisher      error_pub; 
+bool step1=true;
+int mark_index;
 void waypoints_callback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
     int no_of_arucos = msg->data.size()/11;
     float min_distance = 9999, theta1, heading_error, distance_error, forward_error, lateral_error;  
     int closest_aruco, min_index;
-    bool translate;
     for (int i=0; i<no_of_arucos; i++) {
         float curr_dist = sqrt(msg->data[i*no_of_arucos+2]*msg->data[i*no_of_arucos+2] + msg->data[i*no_of_arucos+3]*msg->data[i*no_of_arucos+3]);
         if (curr_dist < min_distance) {
@@ -22,21 +23,36 @@ void waypoints_callback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
             lateral_error   = msg->data[i*no_of_arucos+3];
         }
     }
-    if (sqrt(min_distance*min_distance)>=distance_threshold) {
-        heading_error = 0;
-    } 
-    else {
-        if (closest_aruco == 96) {
-            heading_error   = 135 - msg->data[min_index+1];
-        }
-        else if (closest_aruco == 7) {
-            heading_error   = 225 - msg->data[min_index+1];
-        }
-        else if (closest_aruco == 19) {
-            heading_error   = 45 - msg->data[min_index+1];
-        }
+    if (step1 == true) {
+        if (sqrt(min_distance*min_distance)>=distance_threshold) {
+            heading_error = 0;
+        } 
         else {
-            heading_error   = 45 + msg->data[min_index+1];
+            if (closest_aruco == 96) {
+                heading_error   = 135 - msg->data[min_index+1];
+            }
+            else if (closest_aruco == 7) {
+                heading_error   = 225 - msg->data[min_index+1];
+            }
+            else if (closest_aruco == 19) {
+                heading_error   = 45 - msg->data[min_index+1];
+            }
+            else {
+                heading_error   = 45 + msg->data[min_index+1];
+            }
+            if (heading_error<=theta_threshold) {
+                step1 = false;
+                mark_index = closest_aruco;
+            }
+        }
+    }
+    else {
+        for (int i=0; i<no_of_arucos; i++) {
+            if (msg->data[i*no_of_arucos] == mark_index) {
+                float curr_dist = sqrt(msg->data[i*no_of_arucos+2]*msg->data[i*no_of_arucos+2] + msg->data[i*no_of_arucos+3]*msg->data[i*no_of_arucos+3]);
+                forward_error = 72.11 - curr_dist;      
+                break;
+            }
         }
     }
     geometry_msgs::Quaternion q;
