@@ -1,0 +1,12 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/shasankgunturu/Project-Mira/devel/lib/python3/dist-packages",
+        "/home/shasankgunturu/catkin_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/shasankgunturu/Project-Mira/devel/lib/python3/dist-packages",
+        "/home/shasankgunturu/catkin_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
+}

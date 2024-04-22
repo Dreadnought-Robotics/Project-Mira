@@ -8,32 +8,22 @@
 ros::Publisher      error_pub; 
 void waypoints_callback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
     int no_of_arucos = msg->data.size()/11;
-    float min_distance = 9999, theta1, heading_error, distance_error;  
+    float min_distance = 9999, theta1, heading_error, distance_error, forward_error, lateral_error;  
     int closest_aruco, min_index;
     bool translate;
     for (int i=0; i<no_of_arucos; i++) {
-        float curr_dist = sqrt(msg->data[i*no_of_arucos+1]*msg->data[i*no_of_arucos+1] + msg->data[i*no_of_arucos+2]*msg->data[i*no_of_arucos+2]);
+        float curr_dist = sqrt(msg->data[i*no_of_arucos+2]*msg->data[i*no_of_arucos+2] + msg->data[i*no_of_arucos+3]*msg->data[i*no_of_arucos+3]);
         if (curr_dist < min_distance) {
             min_distance    = curr_dist;
-            theta1          = round(((atan2((round(msg->data[i*no_of_arucos+2]*100)/100), (round(msg->data[i*no_of_arucos+1]*100)/100)))* 180 / 3.14)*100)/100;
+            // theta1          = round(((atan2((round(msg->data[i*no_of_arucos+2]*100)/100), (round(msg->data[i*no_of_arucos+1]*100)/100)))* 180 / 3.14)*100)/100;
             closest_aruco   = msg->data[i*no_of_arucos];
             min_index       = i*no_of_arucos;
+            forward_error   = msg->data[i*no_of_arucos+2];
+            lateral_error   = msg->data[i*no_of_arucos+3];
         }
     }
     if (sqrt(min_distance*min_distance)>=distance_threshold) {
-        heading_error = theta1;
-        if (heading_error < theta_threshold) {
-            translate = true;
-        }
-        else {
-            translate = false;
-        }
-        if (translate) {
-            distance_error = sqrt(msg->data[min_index+8]*msg->data[min_index+8] + msg->data[min_index+9]*msg->data[min_index+9]);
-        }
-        else {
-            distance_error = 0;
-        }
+        heading_error = 0;
     } 
     else {
         if (closest_aruco == 96) {
@@ -48,22 +38,11 @@ void waypoints_callback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
         else {
             heading_error   = 45 + msg->data[min_index+1];
         }
-        if (heading_error < theta_threshold) {
-            translate = true;
-        }
-        else {
-            translate = false;
-        }
-        if (translate) {
-            distance_error = 0.7211;
-        }
-        else {
-            distance_error = 0;
-        }
     }
     geometry_msgs::Quaternion q;
     q.x = heading_error;
-    q.y = distance_error;
+    q.y = forward_error;
+    q.z = lateral_error;
     error_pub.publish(q);
 }
 

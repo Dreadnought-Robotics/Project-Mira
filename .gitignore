@@ -1,2 +1,3 @@
 build/
 devel/
+src/visualize/src/error_plot.py
