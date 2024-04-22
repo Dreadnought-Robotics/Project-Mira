@@ -27,21 +27,21 @@ class Visualizer:
         self.ax.legend()
 
     def error_callback(self, msg):
-        error = [msg.data[0]]
-        self.data.append(error)
-
-        if len(self.data) >= self.window_size:
-            filtered_point = savgol_filter(
-                list(self.data), self.window_size, self.poly_order
-            )[-1]
-            self.filtered_data.append(filtered_point)
-            self.update_plot()
+        error = [msg.x]
+        self.data.append(error) 
+        print(msg.x, msg.y, msg.z)
+        # if len(self.data) >= self.window_size:
+        #     filtered_point = savgol_filter(
+        #         list(self.data), self.window_size, self.poly_order
+        #     )[-1]
+        #     self.filtered_data.append(filtered_point)
+        self.update_plot()
 
     def update_plot(self):
         self.line1.set_xdata(range(len(self.data)))
         self.line1.set_ydata(self.data)
-        self.line2.set_xdata(range(len(self.filtered_data)))
-        self.line2.set_ydata(self.filtered_data)
+        # self.line2.set_xdata(range(len(self.filtered_data)))
+        # self.line2.set_ydata(self.filtered_data)
         self.ax.relim()
         self.ax.autoscale_view()
         self.fig.canvas.draw()
