@@ -309,7 +309,9 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
         waypoint_publisher.publish(f);
         pixel_publisher.publish(p);
     }
-    cv::imshow("frame", frame);
+    cv::resizeWindow("Camera Down View", 640, 480);
+    cv::moveWindow("Camera Down View", 1280, 0);
+    cv::imshow("Camera Down View", frame);
     cv::waitKey(1);
 }
 

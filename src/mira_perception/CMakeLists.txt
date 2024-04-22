@@ -126,8 +126,6 @@ add_executable(camera_sub1 src/Subscriber_Node1.cpp)
 target_link_libraries(camera_sub1  ${catkin_LIBRARIES})
 add_executable(camera_sub2 src/Subscriber_Node2.cpp)
 target_link_libraries(camera_sub2  ${catkin_LIBRARIES})
-add_executable(publish_camers src/publisher_cam.cpp)
-target_link_libraries(publish_camers  ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_executable(localizer src/localize.cpp)
 target_link_libraries(localizer  ${catkin_LIBRARIES} ${OpenCV_LIBS})
 ## Declare a C++ library
