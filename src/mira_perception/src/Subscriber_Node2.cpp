@@ -6,7 +6,8 @@
 void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     try {
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
-        // Display or process the decompressed image as needed
+        cv::resizeWindow("Camera Down View", 640, 480);
+        cv::moveWindow("Camera Down View", 1280, 0);
         cv::imshow("Camera Down View", cv_ptr->image);
         cv::waitKey(1);
     } catch (cv_bridge::Exception& e) {
@@ -24,3 +25,4 @@ int main(int argc, char** argv) {
 
     return 0;
 }
+
