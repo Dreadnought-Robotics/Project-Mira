@@ -34,11 +34,11 @@ class controller{
             arm_disarm = msg->buttons[0];
 
             msg_to_pub.pitch=1500+((msg->axes[1])*400);
-            msg_to_pub.roll=1500+((msg->buttons[6])*-400)+((msg->buttons[7])*400);
-            msg_to_pub.thrust=1500+(((msg->axes[4])+1)*-200)+(((msg->axes[5])+1)*200);
+            msg_to_pub.roll=1500+((msg->buttons[4])*-400)+((msg->buttons[5])*400);
+            msg_to_pub.thrust=1500+(((msg->axes[5])+1)*-200)+(((msg->axes[2])+1)*200);
             msg_to_pub.yaw=1500+((msg->axes[0])*-400);
-            msg_to_pub.forward=1500+((msg->axes[3])*400);
-            msg_to_pub.lateral=1500+((msg->axes[2])*-400);
+            msg_to_pub.forward=1500+((msg->axes[4])*400);
+            msg_to_pub.lateral=1500+((msg->axes[3])*-400);
 
             if(arm_disarm==1 && prev_msg==0){
                 if(msg_to_pub.arm==0){
