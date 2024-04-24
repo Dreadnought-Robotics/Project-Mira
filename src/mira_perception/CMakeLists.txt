@@ -128,6 +128,11 @@ add_executable(camera_sub2 src/Subscriber_Node2.cpp)
 target_link_libraries(camera_sub2  ${catkin_LIBRARIES})
 add_executable(localizer src/localize.cpp)
 target_link_libraries(localizer  ${catkin_LIBRARIES} ${OpenCV_LIBS})
+
+add_executable(rov_cam1 src/Rov_subscriber1.cpp)
+target_link_libraries(rov_cam1  ${catkin_LIBRARIES})
+add_executable(rov_cam2 src/Rov_subscriber2.cpp)
+target_link_libraries(rov_cam2  ${catkin_LIBRARIES})
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/mira_perception.cpp
