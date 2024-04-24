@@ -7,8 +7,8 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     try {
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
         cv::flip(cv_ptr->image, cv_ptr->image, 0);
-        cv::resizeWindow("Camera Front HD View", 1920, 1080);
-        cv::moveWindow("Camera Front HD View", 960, 540);
+        cv::resizeWindow("Camera Front HD View", 640, 360);
+        // cv::moveWindow("Camera Front HD View", 640, 360);
         cv::imshow("Camera Front Hd View", cv_ptr->image);
         cv::waitKey(1);
     } catch (cv_bridge::Exception& e) {
@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "rov_feed_front");
     ros::NodeHandle nh;
 
-    ros::Subscriber sub = nh.subscribe("/camer_front_hd/image_raw/compressed", 1, imageCallback);
+    ros::Subscriber sub = nh.subscribe("/camera_front_hd/image_raw/compressed", 1, imageCallback);
 
     ros::spin();
 
