@@ -8,7 +8,10 @@
 #include <std_msgs/Float32MultiArray.h>
 #include <geometry_msgs/Vector3.h>
 #include <eigen3/Eigen/Dense> // Make sure to have Eigen library installed
-
+#define IDTOPLEFT 28
+#define IDTOPRIGHT 7
+#define IDBOTTOMLEFT 19
+#define IDBOTTOMRIGHT 96
 // 28    80cm      7
 // 120cm 
 // 19              96   -------->X
@@ -183,10 +186,10 @@ class Aruco {
         }
 };
 
-Aruco                       left_top(28);
-Aruco                       left_bottom(19);
-Aruco                       right_bottom(96);
-Aruco                       right_top(7);
+Aruco                       left_top(IDTOPLEFT);
+Aruco                       left_bottom(IDBOTTOMLEFT);
+Aruco                       right_bottom(IDBOTTOMRIGHT);
+Aruco                       right_top(IDTOPRIGHT);
 cv_bridge::CvImagePtr       cv_ptr;
 
 void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
@@ -221,7 +224,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
         // std::vector<float> prev_mean
         for(int i=0; i<marker_IDs.size(); i++) {
             // std::cout << "i = " << i << "; ID = " << marker_IDs[i] << std::endl;
-            if (marker_IDs[i]==28) {
+            if (marker_IDs[i]==IDTOPLEFT) {
                 left_top.marker_corners         = marker_corners[i];
                 left_top.tVec                   = tVec[i];
                 left_top.rVec                   = rVec[i];
@@ -241,7 +244,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
                 p.data.push_back(left_top.pix_y);
                 p.data.push_back(left_top.pix_x);
             }
-            else if (marker_IDs[i]==19) {
+            else if (marker_IDs[i]==IDBOTTOMLEFT) {
                 left_bottom.marker_corners      = marker_corners[i];
                 left_bottom.tVec                = tVec[i];
                 left_bottom.rVec                = rVec[i];
@@ -261,7 +264,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
                 p.data.push_back(left_bottom.pix_y);
                 p.data.push_back(left_bottom.pix_x);
             }
-            else if (marker_IDs[i]==96) {
+            else if (marker_IDs[i]==IDBOTTOMRIGHT) {
                 right_bottom.marker_corners     = marker_corners[i];
                 right_bottom.tVec               = tVec[i];
                 right_bottom.rVec               = rVec[i];
@@ -281,7 +284,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
                 p.data.push_back(right_bottom.pix_y);
                 p.data.push_back(right_bottom.pix_x);
             }
-            else if (marker_IDs[i]==7) {
+            else if (marker_IDs[i]==IDTOPRIGHT) {
                 right_top.marker_corners        = marker_corners[i];
                 right_top.tVec                  = tVec[i];
                 right_top.rVec                  = rVec[i];
