@@ -25,21 +25,21 @@
 // cv::Mat distortion_coefficients                         = (cv::Mat_<double>(1, 5) << -0.459209, 0.259088, -0.000816, -0.000174, 0.000000);
 
 //640 bottom                        
-// cv::Mat camera_matrix                                   = (cv::Mat_<double>(3, 3) << 625.282300, 0.000000, 323.520079, 0.000000, 663.259633, 128.107059, 0.000000, 0.000000, 1.000000);
-// cv::Mat distortion_coefficients              `           = (cv::Mat_<double>(1, 5) << -0.468410, 0.199118, 0.012586, -0.001849, 0.000000);
+cv::Mat camera_matrix                                    = (cv::Mat_<double>(3, 3) << 655.3957567464429, 0.0, 309.229468237061, 0.0, 658.8623421039053, 223.74985228853447, 0.0, 0.0, 1.0);
+cv::Mat distortion_coefficients                          = (cv::Mat_<double>(1, 5) << -0.43734277106914093, 0.20874340537321745, 0.0018488828869952143, 0.0009235703079396009, 0.0);
 
 //on air sony                       
 // cv::Mat camera_matrix                                   = (cv::Mat_<double>(3, 3) << 686.616434, 0.000000, 307.541900, 0.000000, 686.823297, 226.293628, 0.000000, 0.000000, 1.000000);
 // cv::Mat distortion_coefficients                         = (cv::Mat_<double>(1, 5) << 0.102440, -0.083527, -0.003444, -0.011869, 0.000000);
 
 // my ios                           
-cv::Mat camera_matrix                                   = (cv::Mat_<double>(3, 3) << 962.6223126270734, 0.000000, 637.8400914606574, 0.000000, 965.4675128523231, 359.65179064008913, 0.000000, 0.000000, 1.000000);
-cv::Mat distortion_coefficients                         = (cv::Mat_<double>(1, 5) << 0.058319642341059984, -0.0912051019399981, 0.001540828309673785, -0.002404788028852987, 0.000000);
+//cv::Mat camera_matrix                                   = (cv::Mat_<double>(3, 3) << 962.6223126270734, 0.000000, 637.8400914606574, 0.000000, 965.4675128523231, 359.65179064008913, 0.000000, 0.000000, 1.000000);
+//cv::Mat distortion_coefficients                         = (cv::Mat_<double>(1, 5) << 0.058319642341059984, -0.0912051019399981, 0.001540828309673785, -0.002404788028852987, 0.000000);
 
 //640 front                         
 // cv::Mat camera_matrix                                   = (cv::Mat_<double>(3, 3) << 664.7437142005466, 0.0, 315.703082526844, 0.0, 669.5841391770296, 252.84811434264267, 0.0, 0.0, 1.0);
 // cv::Mat distortion_coefficients                         = (cv::Mat_<double>(1, 5) << -0.4812806594873973, 0.2745181609001952, 0.004042548280670333, -0.006039934872833289, 0.0);
-float MARKER_SIZE                                       = 16.5;
+float MARKER_SIZE                                       = 15;
 cv::Ptr<cv::aruco::Dictionary> marker_dict              = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_ARUCO_ORIGINAL);
 cv::Ptr<cv::aruco::DetectorParameters> param_markers    = cv::aruco::DetectorParameters::create();
 ros::Publisher                                          waypoint_publisher, pixel_publisher;
@@ -133,7 +133,7 @@ class Aruco {
             // float angleB    = theta3 + CV_PI/2 - theta2;
             b               = sqrt(a*a + c*c + 2*a*c*cos(theta2 + theta3 + theta1));
             alpha           = acos((c*c - b*b - a*a)/(2*a*b));// - theta1;
-            std::cout       << "theta1: " << theta1 << std::endl;
+
         }
     private:
         void euler_from_quaternion(double x, double y, double z, double w, double &roll, double &pitch, double &yaw) {
@@ -176,7 +176,7 @@ class Aruco {
             roll_x = roll_x * 180 / CV_PI;
             pitch_y = pitch_y * 180 / CV_PI;
             yaw_z = yaw_z * 180 / CV_PI;
-            std::cout << "roll: " << roll_x << " pitch: " << pitch_y << " yaw: " << yaw_z << std::endl;
+
             cv::Mat pixels = cv::Mat::zeros(3,1,CV_64F);
             pixels.at<double>(0) = center.x;
             pixels.at<double>(1) = center.y;
