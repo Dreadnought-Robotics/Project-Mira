@@ -5,6 +5,7 @@
 
 #define distance_threshold 0.01
 #define theta_threshold 0.01
+
 ros::Publisher      error_pub; 
 bool step1=true;
 int mark_index;
