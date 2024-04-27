@@ -7,7 +7,7 @@ import cv2
 
 def main():
     rospy.init_node('video_publisher', anonymous=True)
-    rate = rospy.Rate(30)  # Adjust the rate as needed
+    rate = rospy.Rate(60)  # Adjust the rate as needed
 
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():

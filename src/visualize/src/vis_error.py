@@ -82,13 +82,16 @@ lateral_list = []
 # rospy.Subscriber("/master/telemetry", telemetry, depth_yaw_callback)
 # rospy.Subscriber("/aruco/waypoints", Float32MultiArray, forward_callback)
 rospy.Subscriber("/docking/errors", Quaternion, error_callback)
+forward_pub = rospy.Publisher("/mira/forward", Float32MultiArray, queue_size=1)
+lateral_pub = rospy.Publisher("/mira/lateral", Float32MultiArray, queue_size=1)
+
 
 # Rate at which to update the plot (in Hz)
-rate = rospy.Rate(10)  # for example, 10 Hz
+# rate = rospy.Rate(30)  # for example, 10 Hz
 
 denoised_forward_list = []
 denoised_lateral_list = []
-
+i = 0
 # Loop to keep the node running and plot the data
 while not rospy.is_shutdown():
     # Plot the received data
@@ -107,6 +110,7 @@ while not rospy.is_shutdown():
     # denoised_forward_mean_list.append(denoised_forward_mean)
     # denoised_lateral_mean_list.append(denoised_lateral_mean)
     if(len(forward_list)>0):
+        
         plt.figure(2)
         denoised_forward = denoise(forward_list)
         denoised_forward_list.append(denoised_forward[-1])
@@ -114,21 +118,32 @@ while not rospy.is_shutdown():
         plt.xlabel("Time")
         plt.ylabel("Forward Error")
         plt.title("Forward Error over Time")
-        plt.grid(True)
+        plt.grid(True)  
         # plt.legend()
         plt.draw()
 
         plt.figure(3)
         denoised_lateral = denoise(lateral_list)
         denoised_lateral_list.append(denoised_lateral[-1])
-        plt.plot(denoised_lateral_list, label = "Lateral Error")
+        plt.plot(forward_list, label = "Lateral Error")
         plt.xlabel("Time")
         plt.ylabel("Lateral Error")
         plt.title("Lateral Error over Time")
         plt.grid(True)
         # plt.legend()
+        # print(denoised_forward_list)
         plt.draw()
-
+        f = Float32MultiArray()
+        f.data = denoised_forward_list
+        # l = Float32MultiArray()
+        # l.data = denoised_lateral_list
+        forward_pub.publish(f)
+        i=i+1
+        print(i)
+        if i>100:
+            i=0
+            forward_list.clear()
+        # lateral_pub.publish(l)
         plt.show(block=False)  # Show the plot without blocking the code execution
-        plt.pause(0.001)  # Pause for a short time to allow the plot to update
-        rate.sleep()
+        plt.pause(0.0001)  # Pause for a short time to allow the plot to update
+        # rate.sleep(   )

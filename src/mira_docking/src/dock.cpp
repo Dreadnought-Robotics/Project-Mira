@@ -15,13 +15,25 @@ void waypoints_callback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
     int closest_aruco, min_index;
     for (int i=0; i<no_of_arucos; i++) {
         float curr_dist = sqrt(msg->data[i*no_of_arucos+2]*msg->data[i*no_of_arucos+2] + msg->data[i*no_of_arucos+3]*msg->data[i*no_of_arucos+3]);
-        if (curr_dist < min_distance) {
+        // if (curr_dist < min_distance) {
+        //     min_distance    = curr_dist;
+        //     // theta1          = round(((atan2((round(msg->data[i*no_of_arucos+2]*100)/100), (round(msg->data[i*no_of_arucos+1]*100)/100)))* 180 / 3.14)*100)/100;
+        //     closest_aruco   = msg->data[i*no_of_arucos];
+        //     min_index       = i*no_of_arucos;
+        //     forward_error   = msg->data[i*no_of_arucos+2];
+        //     lateral_error   = msg->data[i*no_of_arucos+3];
+        // }
+        if (msg->data[i*no_of_arucos] == 96) {
             min_distance    = curr_dist;
             // theta1          = round(((atan2((round(msg->data[i*no_of_arucos+2]*100)/100), (round(msg->data[i*no_of_arucos+1]*100)/100)))* 180 / 3.14)*100)/100;
             closest_aruco   = msg->data[i*no_of_arucos];
             min_index       = i*no_of_arucos;
             forward_error   = msg->data[i*no_of_arucos+2];
             lateral_error   = msg->data[i*no_of_arucos+3];
+            std::cout << forward_error << ", " << lateral_error << std::endl;
+        }
+        else {
+            std::cout << msg->data[i*no_of_arucos] <<std::endl;
         }
     }
     // if (step1 == true) {

@@ -6,12 +6,13 @@
 class Control {
     public:
         float pwm, kp ,kd, ki, current_velocity, prev_velocity=0, pwm_prev=1500;
-        std::vector<double> error_vector;
-        float pid_control(float error, float dtime, bool switch_polarity) {
-            time.push_back(dtime);
-            error_vector.push_back(error);
-            error_vector = denoise(error_vector);
-            error = error_vector.back();
+        std::vector<float> error_vector;
+        float pid_control(float dtime, bool switch_polarity) {
+            // time.push_back(dtime);
+            // error_vector.push_back(error);
+            // error_vector = denoise(error_vector);
+            if (error_vector.size()>0) {
+            float error = error_vector.back();
             float pid_p = (kp*error);
             float pid_i = (integrate(error_vector, time));
             float pid_d = 0;
@@ -73,6 +74,10 @@ class Control {
             }
             pwm_prev = pwm;
             return pwm;
+            }
+            else {
+                return 1500;
+            }
         }
         float hold() {
             return 1500.00;
@@ -84,8 +89,8 @@ class Control {
             }
         }
     private:
-    std::vector<double> time;
-        float integrate(std::vector<double> error, std::vector<double> time) {
+    std::vector<float> time;
+        float integrate(std::vector<float> error, std::vector<float> time) {
             float area = 0;
             try {
                 for (int i = 1; i < time.size(); i++) {
@@ -97,8 +102,8 @@ class Control {
             
             return area;
         }
-    std::vector<double> denoise(const std::vector<double>& data) {
-        std::vector<double> result;
+    std::vector<float> denoise(const std::vector<float>& data) {
+        std::vector<float> result;
         
         if (data.empty())
             return result;
