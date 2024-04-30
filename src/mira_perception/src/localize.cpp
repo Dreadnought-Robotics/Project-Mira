@@ -241,6 +241,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
                     f.data.push_back(left_top.closest_coordinates[j]);
                 }
                 p.data.push_back(marker_IDs[i]);
+                p.data.push_back(left_top.yaw);
                 p.data.push_back(left_top.pix_y);
                 p.data.push_back(left_top.pix_x);
             }
@@ -261,6 +262,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
                     f.data.push_back(left_bottom.closest_coordinates[j]);
                 }
                 p.data.push_back(marker_IDs[i]);
+                p.data.push_back(left_bottom.yaw);
                 p.data.push_back(left_bottom.pix_y);
                 p.data.push_back(left_bottom.pix_x);
             }
@@ -281,6 +283,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
                     f.data.push_back(right_bottom.closest_coordinates[j]);
                 }
                 p.data.push_back(marker_IDs[i]);
+                p.data.push_back(right_bottom.yaw);
                 p.data.push_back(right_bottom.pix_y);
                 p.data.push_back(right_bottom.pix_x);
             }
@@ -301,6 +304,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
                     f.data.push_back(right_top.closest_coordinates[j]);
                 }
                 p.data.push_back(marker_IDs[i]);
+                p.data.push_back(right_top.yaw);
                 p.data.push_back(right_top.pix_y);
                 p.data.push_back(right_top.pix_x);
             }
