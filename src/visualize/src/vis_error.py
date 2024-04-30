@@ -3,7 +3,7 @@
 import matplotlib.pyplot as plt
 import rospy
 from geometry_msgs.msg import Quaternion
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Float32MultiArray, Float32
 import numpy as np
 from custom_msgs.msg import telemetry
 
@@ -84,14 +84,14 @@ lateral_list = []
 rospy.Subscriber("/docking/errors", Quaternion, error_callback)
 
 # Rate at which to update the plot (in Hz)
-rate = rospy.Rate(10)  # for example, 10 Hz
+# rate = rospy.Rate(30)  # for example, 10 Hz
 
 denoised_forward_list = []
 denoised_lateral_list = []
-
+i = 0
 # Loop to keep the node running and plot the data
 while not rospy.is_shutdown():
-    # Plot the received data
+    # Plot the received datax
     # plt.figure(1)
     # denoised_data = denoise(data_list)
     # plt.plot(denoised_data, label = "Data")
@@ -107,28 +107,29 @@ while not rospy.is_shutdown():
     # denoised_forward_mean_list.append(denoised_forward_mean)
     # denoised_lateral_mean_list.append(denoised_lateral_mean)
     if(len(forward_list)>0):
+        # 
         plt.figure(2)
-        denoised_forward = denoise(forward_list)
-        denoised_forward_list.append(denoised_forward[-1])
-        plt.plot(denoised_forward_list, label = "Forward Error")
+        # denoised_forward = denoise(forward_list)
+        # denoised_forward_list.append(denoised_forward[-1])
+        plt.plot(forward_list, label = "Forward Error")
         plt.xlabel("Time")
         plt.ylabel("Forward Error")
         plt.title("Forward Error over Time")
-        plt.grid(True)
+        plt.grid(True)  
         # plt.legend()
         plt.draw()
 
         plt.figure(3)
-        denoised_lateral = denoise(lateral_list)
-        denoised_lateral_list.append(denoised_lateral[-1])
-        plt.plot(denoised_lateral_list, label = "Lateral Error")
+        # denoised_lateral = denoise(lateral_list)
+        # denoised_lateral_list.append(denoised_lateral[-1])
+        plt.plot(lateral_list, label = "Lateral Error")
         plt.xlabel("Time")
         plt.ylabel("Lateral Error")
         plt.title("Lateral Error over Time")
         plt.grid(True)
         # plt.legend()
+        # print(denoised_forward_list)
         plt.draw()
-
-        plt.show(block=False)  # Show the plot without blocking the code execution
+        # plt.show(block=False)  # Show the plot without blocking the code execution
         plt.pause(0.001)  # Pause for a short time to allow the plot to update
-        rate.sleep()
+        # rate.sleep(   )
