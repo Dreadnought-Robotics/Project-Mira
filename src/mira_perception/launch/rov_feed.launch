@@ -1,4 +1,0 @@
-<launch>
-  <node pkg="mira_perception" type="rov_cam1" name="rov_cam1" output="screen"/>
-  <node pkg="mira_perception" type="rov_cam2" name="rov_cam2" output="screen"/>
-</launch>

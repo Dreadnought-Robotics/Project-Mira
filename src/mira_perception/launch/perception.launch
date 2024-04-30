@@ -1,4 +1,4 @@
 <launch>
   <node name="localizer" pkg="mira_perception" type="localizer" output="screen"/>
-  <node pkg="mira_perception" type="camera_sub1" name="camera_sub1" output="screen"/>
+  <!-- <node pkg="mira_perception" type="camera_sub1" name="camera_sub1" output="screen"/> -->
 </launch>

@@ -2,7 +2,7 @@
 #include <custom_msgs/commands.h>
 #include <sensor_msgs/Joy.h>
 
-
+//yaw lock function and depth hold function added 
 class controller{
     public:
         ros::Subscriber joy_sub;

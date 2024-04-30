@@ -322,6 +322,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     cv::waitKey(1);
 }
 
+//send the feed to a new publisher called /camera_down/image_raw/compressed/aruco 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "localizer_using_aruco");
     ros::NodeHandle nh;

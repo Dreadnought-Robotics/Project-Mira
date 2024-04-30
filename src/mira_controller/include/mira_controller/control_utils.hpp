@@ -1,7 +1,6 @@
 #include <ros/ros.h>
 #include <geometry_msgs/Vector3.h>
 #include <cmath>
-#include <fftw3.h>
 
 class Control {
     public:
