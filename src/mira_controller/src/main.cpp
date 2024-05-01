@@ -54,17 +54,17 @@ void keys_callback(const std_msgs::Char::ConstPtr& msg) {
         std::cout <<"current lateral kp value: "+ std::to_string(lateral.kp) << std::endl;
     }
     else if (key == 'd') {
-        lateral.kp = lateral.kd-0.1;
+        lateral.kp = lateral.kp-0.1;
         std::cout <<"current lateral kp value: "+ std::to_string(lateral.kp)<< std::endl;
     }
-    // else if (key == 'r') {
-    //     depth.kp = depth.kd+0.1;
-    //     std::cout <<"current kd value: "+ std::to_string(depth.kd) << std::endl;
-    // }
-    // else if (key == 'f') {
-    //     depth.kp = depth.kd-0.1;
-    //     std::cout <<"current kd value: "+ std::to_string(depth.kd)<< std::endl;
-    // }
+    else if (key == 'r') {
+        yaw.kp = yaw.kp+0.1;
+        std::cout <<"current yaw kp value: "+ std::to_string(yaw.kp) << std::endl;
+    }
+    else if (key == 'f') {
+        yaw.kp = yaw.kp-0.1;
+        std::cout <<"current yaw kp value: "+ std::to_string(yaw.kp)<< std::endl;
+    }
     else if (key == 'm') {
         std::cout <<"Forward switch"<< std::endl;
         forward_bool = !forward_bool;
@@ -75,11 +75,10 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "auv_controller");
     ros::NodeHandle                     nh;
     ros::Publisher pwm_publisher        = nh.advertise<custom_msgs::commands>("/master/commands", 1);
-    // ros::Publisher error_publisher      = nh.advertise<std_msgs::Float32MultiArray>("/mira/fixed_errors", 1);
     ros::Subscriber keys_subscriber     = nh.subscribe("keys", 1, keys_callback);
 
     Subscriber                          subs(nh);
-    yaw.kp                              = 0;
+    yaw.kp                              = 0.97;
     yaw.ki                              = 0;
     yaw.kd                              = 0;
     depth.kp                            = 0;
@@ -126,8 +125,6 @@ int main(int argc, char **argv) {
             cmd_pwm.yaw                 = pid_yaw;
         }
         std_msgs::Float32MultiArray v;
-        // v.data = forward.error_vector;
-        // error_publisher.publish(v);
         pwm_publisher.publish(cmd_pwm);
         ros::spinOnce();
     }

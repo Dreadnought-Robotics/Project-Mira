@@ -176,7 +176,8 @@ class Aruco {
             roll_x = roll_x * 180 / CV_PI;
             pitch_y = pitch_y * 180 / CV_PI;
             yaw_z = yaw_z * 180 / CV_PI;
-
+            yaw = yaw_z;
+            std::cout << "yaw: " << yaw_z << std::endl;
             cv::Mat pixels = cv::Mat::zeros(3,1,CV_64F);
             pixels.at<double>(0) = center.x;
             pixels.at<double>(1) = center.y;
