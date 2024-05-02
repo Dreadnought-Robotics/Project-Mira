@@ -6,7 +6,6 @@
 void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     try {
         cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
-        cv::flip(cv_ptr->image, cv_ptr->image, 0);
         cv::resizeWindow("Camera Front View", 640, 480);
         cv::moveWindow("Camera Front View", 1280, 640);
         cv::imshow("Camera Front View", cv_ptr->image);
