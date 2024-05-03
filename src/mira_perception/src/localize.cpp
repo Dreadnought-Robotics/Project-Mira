@@ -42,8 +42,13 @@ cv::Mat distortion_coefficients                          = (cv::Mat_<double>(1, 
 float MARKER_SIZE                                       = 15;
 cv::Ptr<cv::aruco::Dictionary> marker_dict              = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_ARUCO_ORIGINAL);
 cv::Ptr<cv::aruco::DetectorParameters> param_markers    = cv::aruco::DetectorParameters::create();
-ros::Publisher                                          waypoint_publisher, pixel_publisher;
-
+ros::Publisher                                          waypoint_publisher, pixel_publisher, docking_center_publisher;
+int width = 640;
+int height = 480;
+int crop_width = width / 2;
+int crop_height = height / 2;
+int crop_x = width - crop_width;
+int crop_y = 0;
 // D = [-0.4812806594873973, 0.2745181609001952, 0.004042548280670333, -0.006039934872833289, 0.0]
 // K = [664.7437142005466, 0.0, 315.703082526844, 0.0, 669.5841391770296, 252.84811434264267, 0.0, 0.0, 1.0]
 // R = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
@@ -55,9 +60,9 @@ class Aruco {
         float                                   roll, pitch, yaw; //pose
         std::vector<cv::Point2f>                marker_corners;
         cv::Vec3d                               rVec, tVec;
-        std::vector<float> world_coordinates;//    = std::vector<float>(3);
-        std::vector<float> pivot_coordinates;//    = std::vector<float>(3);
-        std::vector<float> closest_coordinates;//  = std::vector<float>(3);
+        std::vector<float>                      world_coordinates;//    = std::vector<float>(3);
+        std::vector<float>                      pivot_coordinates;//    = std::vector<float>(3);
+        std::vector<float>                      closest_coordinates;//  = std::vector<float>(3);
         cv::Mat                                 frame;
         int                                     pix_y, pix_x;
         float                                   a, b, c=72.11, alpha, theta1, theta2, theta3;
@@ -77,6 +82,7 @@ class Aruco {
             pix_x   = center.x;
             cv::drawFrameAxes(frame, camera_matrix, distortion_coefficients, rVec, tVec, MARKER_SIZE*1.5);
             cv::Mat ret = getCornersInWorldFrame(center, rVec, tVec);
+
             // for (int j=0; j<3; j++) {
             //     ret.at<double>(j,0) = ret.at<double>(j,0)/100;
             // }
@@ -317,6 +323,42 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
         waypoint_publisher.publish(f);
         pixel_publisher.publish(p);
     }
+    cv::Rect crop_roi(crop_x, crop_y, crop_width, crop_height);
+    cv::Mat new_frame = frame(crop_roi);
+
+    // Color thresholding
+    cv::Scalar lower_rgb(50, 110, 90);
+    cv::Scalar upper_rgb(90, 160, 120);
+    cv::Mat img_rgb;
+    cv::cvtColor(frame, img_rgb, cv::COLOR_BGR2RGB);
+
+    cv::Mat mask;
+    cv::inRange(img_rgb, lower_rgb, upper_rgb, mask);
+
+    // Find contours in the binary mask
+    std::vector<std::vector<cv::Point>> contours;
+    std::vector<cv::Vec4i> hierarchy;
+    findContours(mask, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+    // cv::Mat contour_frame = frame.clone();
+    // cv::Mat contour_frame2 = mask.clone();
+    int cx, cy;
+    for (size_t i = 0; i < contours.size(); i++) {
+        if (contourArea(contours[i]) > 200) {
+            cv::Moments M = moments(contours[i]);
+            if (M.m00 != 0) {
+                cx = static_cast<int>(M.m10 / M.m00);
+                cy = static_cast<int>(M.m01 / M.m00);
+                std::cout << cx << " " << cy << std::endl;
+                // Draw contours on the original frame
+                // drawContours(contour_frame, contours, static_cast<int>(i), cv::Scalar(0, 255, 0), 2);
+                // circle(contour_frame, cv::Point(cx, cy), 7, cv::Scalar(0, 0, 255), -1);
+            }
+        }
+    }
+    geometry_msgs::Vector3 k;
+    k.x = cx;
+    k.y = cy;
     cv::resizeWindow("Camera Down View", 640, 480);
     cv::moveWindow("Camera Down View", 1280, 0);
     cv::imshow("Camera Down View", frame);
@@ -329,6 +371,7 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh;
     ros::Subscriber image_subscriber    = nh.subscribe("/camera_down/image_raw/compressed", 1, imageCallback);
     waypoint_publisher                  = nh.advertise<std_msgs::Float32MultiArray>("/aruco/waypoints", 1);
+    docking_center_publisher            = nh.advertise<geometry_msgs::Vector3>("/docking/center", 1);
     pixel_publisher                     = nh.advertise<std_msgs::Float32MultiArray>("/aruco/pixels", 1);
     ros::spin();
 }

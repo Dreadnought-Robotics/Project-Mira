@@ -78,16 +78,16 @@ int main(int argc, char **argv) {
     ros::Subscriber keys_subscriber     = nh.subscribe("keys", 1, keys_callback);
 
     Subscriber                          subs(nh);
-    yaw.kp                              = 0.97;
+    yaw.kp                              = 0.87;
     yaw.ki                              = 0;
     yaw.kd                              = 0;
     depth.kp                            = 0;
     depth.ki                            = 0;
     depth.kd                            = 0;
-    forward.kp                          = 0.97;
+    forward.kp                          = 0.927;
     forward.ki                          = 0;
     forward.kd                          = 0;
-    lateral.kp                          = 0.97;
+    lateral.kp                          = 0.927;
     lateral.ki                          = 0;
     lateral.kd                          = 0;
     bool arm                            = false;
@@ -123,6 +123,9 @@ int main(int argc, char **argv) {
             }
             cmd_pwm.thrust              = pid_depth;
             cmd_pwm.yaw                 = pid_yaw;
+        }
+        if (subs.depth_service_called==true) {
+            cmd_pwm.thrust = 1450;
         }
         std_msgs::Float32MultiArray v;
         pwm_publisher.publish(cmd_pwm);

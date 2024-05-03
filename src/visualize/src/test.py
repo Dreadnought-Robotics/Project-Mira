@@ -1,57 +1,99 @@
-#!usr/bin/env python3
-from collections import deque
+#!/usr/bin/env python3
 
 import matplotlib.pyplot as plt
-from scipy.signal import savgol_filter
+import rospy
+from geometry_msgs.msg import Quaternion
+from std_msgs.msg import Float32MultiArray, Float32
+import numpy as np
+from collections import deque    
+from scipy import signal
 
+threshold = 8
 
-class Visualizer:
-    def __init__(self):
-        self.data = [deque(maxlen=100) for _ in range(4)]
-        self.filtered_data = [deque(maxlen=100) for _ in range(4)]
-        self.window_size = 5
-        self.poly_order = 3
-        plt.ion()
-        self.fig, ((self.ax1, self.ax2), (self.ax3, self.ax4)) = plt.subplots(
-            2, 2, figsize=(10, 8)
-        )
-        self.lines = []
-        self.filtered_lines = []
-        for ax in [self.ax1, self.ax2, self.ax3, self.ax4]:
-            (line1,) = ax.plot([], [], "b", label="Original Data")
-            (line2,) = ax.plot([], [], "r", label="Filtered Data")
-            self.lines.append(line1)
-            self.filtered_lines.append(line2)
-            ax.legend()
+surge_error = deque(maxlen=100)
+sway_error = deque(maxlen=100)
+heave_error = deque(maxlen=100)
+yaw_error = deque(maxlen=100)
 
-    def run(self):
-        while True:
-            errors = list(map(int, input().split()))
-            for i, error in enumerate(errors):
-                self.data[i].append(error)
-                if len(self.data[i]) >= self.window_size:
-                    filtered_point = savgol_filter(
-                        list(self.data[i]), self.window_size, self.poly_order
-                    )[-1]
-                    self.filtered_data[i].append(filtered_point)
-            self.update_plot()
+def error_callback(msg):
+    surge_error.append(msg.x)
+    sway_error.append(msg.y)
+    heave_error.append(msg.z)
+    yaw_error.append(msg.w)
 
-    def update_plot(self):
-        for i, (line1, line2, data, filtered_data) in enumerate(
-            zip(self.lines, self.filtered_lines, self.data, self.filtered_data)
-        ):
-            line1.set_xdata(range(len(data)))
-            line1.set_ydata(data)
-            line2.set_xdata(range(len(filtered_data)))
-            line2.set_ydata(filtered_data)
-            ax = [self.ax1, self.ax2, self.ax3, self.ax4][i]
-            ax.relim()
-            ax.autoscale_view()
-        self.fig.canvas.draw()
-        self.fig.canvas.flush_events()
+def lfilter_denoise(data):
+    if len(data) == 0:
+        return np.array([])
+    b, a = signal.butter(3, 0.05)
+    y = signal.filtfilt(b, a, data)
+    return y
 
+def fft_denoise(data):
+    if len(data) == 0:
+        return np.array([])
+    fft_data = np.fft.fft(data)
+    fft_data[10:] = 0  
+    return np.fft.ifft(fft_data).real
+    
+def savgol_filter(data):
+    if len(data) == 0:
+        return np.array([])
+    if len(data) > 50:
+        y = signal.savgol_filter(data, 50, 2)
+        return y
+    else :
+        y = data
+        return y
 
-if __name__ == "__main__":
-    plotter = Visualizer()
-    plotter.run()
-    plt.show()
+# def 
+    
+
+rospy.init_node("visualizer", anonymous=True)
+rospy.Subscriber("/docking/errors/3d", Quaternion, error_callback)
+rate = rospy.Rate(10)
+fig, axs = plt.subplots(2, 2)
+p = rospy.Publisher("/docking/errors/3d/refined", Quaternion, queue_size=10)
+while not rospy.is_shutdown():
+    if len(surge_error) >= 20: 
+        q = Quaternion()
+        denoised_surge = lfilter_denoise(list(surge_error))
+        axs[0, 0].clear()
+        axs[0, 0].plot(denoised_surge, label="Surge Error")
+        axs[0, 0].set(xlabel='Time', ylabel='Surge Error')
+        axs[0, 0].grid(True)
+        axs[0, 0].set_title('Surge Error over Time')
+
+        # Denoise sway error using FFT
+        denoised_sway = lfilter_denoise(list(sway_error))
+        # Plot sway error
+        axs[0, 1].clear()
+        axs[0, 1].plot(denoised_sway, label="Sway Error")
+        axs[0, 1].set(xlabel='Time', ylabel='Sway Error')
+        axs[0, 1].grid(True)
+        axs[0, 1].set_title('Sway Error over Time')
+
+        # Denoise heave error using FFT
+        denoised_heave = lfilter_denoise(list(heave_error))
+        # Plot heave error
+        axs[1, 0].clear()
+        axs[1, 0].plot(denoised_heave, label="Heave Error")
+        axs[1, 0].set(xlabel='Time', ylabel='Heave Error')
+        axs[1, 0].grid(True)
+        axs[1, 0].set_title('Heave Error over Time')
+
+        # Denoise yaw error using FFT
+        denoised_yaw = lfilter_denoise(list(yaw_error))
+        # Plot yaw error
+        axs[1, 1].clear()
+        axs[1, 1].plot(denoised_yaw, label="Yaw Error")
+        axs[1, 1].set(xlabel='Time', ylabel='Yaw Error')
+        axs[1, 1].grid(True)
+        axs[1, 1].set_title('Yaw Error over Time')
+
+        plt.pause(0.001)  # Pause for a short time to allow the plot to update
+        q.x = -1*denoised_surge[-1]
+        q.y = denoised_sway[-1]
+        p.publish(q)
+    rate.sleep()
+
+plt.show()  # Show the plot

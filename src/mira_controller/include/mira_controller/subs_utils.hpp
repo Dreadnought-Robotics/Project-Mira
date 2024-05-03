@@ -8,16 +8,17 @@
 
 class Subscriber {
     public:
-        bool                        service_called = false;
+        bool                        service_called = false, depth_service_called = false;
         double                      depth_error, yaw_error, forward_error, lateral_error, pid_depth, pid_yaw;
         double                      angular_velocity_z, yaw_comp_reading, marked_yaw;
         Subscriber(ros::NodeHandle nh) {
-            yaw_lock                = nh.advertiseService("/yaw/lock", &Subscriber::emptyServiceCallback, this);
+            yaw_lock                = nh.advertiseService("/yaw/lock", &Subscriber::emptyYawServiceCallback, this);
+            depth_lock              = nh.advertiseService("/depth/lock", &Subscriber::emptyDepthServiceCallback, this);
             telemetry_sub           = nh.subscribe("/master/telemetry", 1, &Subscriber::telemetryCallback, this);
             error_sub               = nh.subscribe("/docking/errors", 1, &Subscriber::dockCallback, this);
         }
     private:
-        bool emptyServiceCallback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
+        bool emptyYawServiceCallback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
             service_called = !service_called;
             if (service_called==true) {
                 marked_yaw = yaw_comp_reading;
@@ -29,7 +30,20 @@ class Subscriber {
             }
             return true;
         }
+        bool emptyDepthServiceCallback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
+            depth_service_called = !depth_service_called;
+            if (depth_service_called==true) {
+                // marked_yaw = yaw_comp_reading;
+                ROS_INFO("Service set to true");
+            }
+            else {
+                ROS_INFO("Service set to false");
+                // yaw_error = 0;
+            }
+            return true;
+        }
         ros::ServiceServer          yaw_lock;
+        ros::ServiceServer          depth_lock;
         ros::Subscriber             waypoints_sub;
         ros::Subscriber             telemetry_sub;
         ros::Subscriber             error_sub;
