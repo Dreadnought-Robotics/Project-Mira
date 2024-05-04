@@ -49,46 +49,48 @@ class Docking24 {
                     forward_error   = msg->data[i*no_of_arucos+2];
                     lateral_error   = msg->data[i*no_of_arucos+3];
                     std::cout << forward_error << ", " << lateral_error << std::endl;
+                    geometry_msgs::Quaternion q;
+                    q.w = 0;//heading_error;
+                    q.x = forward_error;
+                    q.y = lateral_error;
+                    error_pub_3d.publish(q);
                 }
                 else {
                     std::cout << msg->data[i*no_of_arucos] <<std::endl;
                 }
             }
-            geometry_msgs::Quaternion q;
-            q.w = 0;//heading_error;
-            q.x = forward_error;
-            q.y = lateral_error;
-            error_pub_3d.publish(q);
+
         }
         void pixel_callback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
             int no_of_arucos = msg->data.size()/4;
             float forward_error, lateral_error, heading_error;  
             for (int i=0; i<no_of_arucos; i++) {
                 if (msg->data[i*no_of_arucos] == 96) {
-                    forward_error = 200-(-1*msg->data[i*no_of_arucos + 2] + 240);
-                    lateral_error = -280-(-1*msg->data[i*no_of_arucos + 3] + 320);
+                    forward_error = 150+(-1*msg->data[i*no_of_arucos + 2] + 240);
+                    lateral_error = 200+(-1*msg->data[i*no_of_arucos + 3] + 320);
                     heading_error = msg->data[i*no_of_arucos + 1]; 
                     std::cout << "forward: "<< forward_error << ", lateral: " << lateral_error << ", yaw: " << heading_error << std::endl;
                     if (yaw_locked==false) {
                         if (sqrt(heading_error*heading_error)<=theta_threshold) {
                             std_srvs::Empty srv;
-                            yaw_lock.call(srv);
-                            yaw_locked = true;
+                            // yaw_lock.call(srv);
+                            // yaw_locked = true;
                         }
                     }
                     else {
                         
                     }
+                    if (center_called==false) {
+                        geometry_msgs::Quaternion q;
+                        ROS_INFO("after the center service is not called");
+                        q.w = heading_error;
+                        q.x = forward_error;
+                        q.y = lateral_error;
+                        error_pub.publish(q);
+                    }       
                 }
             }
-            if (center_called==false) {
-                geometry_msgs::Quaternion q;
-                ROS_INFO("after the center service is not called");
-                q.w = heading_error;
-                q.x = forward_error;
-                q.y = lateral_error;
-                error_pub.publish(q);
-            }
+
         }
         void center_callback(const geometry_msgs::Vector3::ConstPtr& msg) {
             float forward_error, lateral_error, heading_error;  

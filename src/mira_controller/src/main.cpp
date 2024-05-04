@@ -78,16 +78,16 @@ int main(int argc, char **argv) {
     ros::Subscriber keys_subscriber     = nh.subscribe("keys", 1, keys_callback);
 
     Subscriber                          subs(nh);
-    yaw.kp                              = 0.87;
+    yaw.kp                              = 0.927;
     yaw.ki                              = 0;
     yaw.kd                              = 0;
     depth.kp                            = 0;
     depth.ki                            = 0;
     depth.kd                            = 0;
-    forward.kp                          = 0.927;
+    forward.kp                          = 0.77;
     forward.ki                          = 0;
     forward.kd                          = 0;
-    lateral.kp                          = 0.927;
+    lateral.kp                          = 0.77;
     lateral.ki                          = 0;
     lateral.kd                          = 0;
     bool arm                            = false;

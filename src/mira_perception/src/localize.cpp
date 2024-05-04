@@ -343,22 +343,30 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     // cv::Mat contour_frame = frame.clone();
     // cv::Mat contour_frame2 = mask.clone();
     int cx, cy;
+    int cy_min = 999, cx_min = 999;
     for (size_t i = 0; i < contours.size(); i++) {
         if (contourArea(contours[i]) > 200) {
             cv::Moments M = moments(contours[i]);
             if (M.m00 != 0) {
                 cx = static_cast<int>(M.m10 / M.m00);
                 cy = static_cast<int>(M.m01 / M.m00);
-                std::cout << cx << " " << cy << std::endl;
+                if (cy<cy_min) {
+                    cy_min = cy;
+                    cx_min = cx;
+                }
                 // Draw contours on the original frame
-                // drawContours(contour_frame, contours, static_cast<int>(i), cv::Scalar(0, 255, 0), 2);
-                // circle(contour_frame, cv::Point(cx, cy), 7, cv::Scalar(0, 0, 255), -1);
+                drawContours(frame, contours, static_cast<int>(i), cv::Scalar(0, 255, 0), 2);
+                circle(frame, cv::Point(cx, cy), 7, cv::Scalar(0, 0, 255), -1);
             }
         }
     }
+    if (cx_min <640 && cy_min < 640){
+    std::cout << cx << " " << cy << std::endl;
     geometry_msgs::Vector3 k;
-    k.x = cx;
-    k.y = cy;
+    k.x = cx_min;
+    k.y = cy_min;
+    docking_center_publisher.publish(k);
+    }
     cv::resizeWindow("Camera Down View", 640, 480);
     cv::moveWindow("Camera Down View", 1280, 0);
     cv::imshow("Camera Down View", frame);
