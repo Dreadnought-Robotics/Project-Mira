@@ -223,12 +223,11 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
         std::vector<cv::Vec3d> rVec, tVec;
         cv::aruco::estimatePoseSingleMarkers(marker_corners, MARKER_SIZE, camera_matrix, distortion_coefficients, rVec, tVec);
         std_msgs::Float32MultiArray f, p;
-        std::vector<std::vector<float>> prev_values(10, std::vector<float> (3));
         left_top.frame      = frame;
         left_bottom.frame   = frame;
         right_bottom.frame  = frame;
         right_top.frame     = frame;
-        // std::vector<float> prev_mean
+        std::vector<float> aruco;
         for(int i=0; i<marker_IDs.size(); i++) {
             // std::cout << "i = " << i << "; ID = " << marker_IDs[i] << std::endl;
             if (marker_IDs[i]==IDTOPLEFT) {
@@ -326,6 +325,14 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     cv::Rect crop_roi(crop_x, crop_y, crop_width, crop_height);
     cv::Mat new_frame = frame(crop_roi);
 
+    cv::Mat gray;
+    cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+    cv::medianBlur(gray, gray, 5);
+    std::vector<cv::Vec3f> circles;
+    cv::HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1,
+    gray.rows/16, // change this value to detect circles with different distances to each other
+    100, 30, 1, 30); // change the last two parameters (min_radius & max_radius) to detect larger circles
+
     // Color thresholding
     cv::Scalar lower_rgb(50, 110, 90);
     cv::Scalar upper_rgb(90, 160, 120);
@@ -338,7 +345,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     // Find contours in the binary mask
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Vec4i> hierarchy;
-    findContours(mask, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    cv::findContours(mask, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
     // cv::Mat contour_frame = frame.clone();
     // cv::Mat contour_frame2 = mask.clone();
@@ -350,22 +357,29 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
             if (M.m00 != 0) {
                 cx = static_cast<int>(M.m10 / M.m00);
                 cy = static_cast<int>(M.m01 / M.m00);
-                if (cy<cy_min) {
-                    cy_min = cy;
-                    cx_min = cx;
+                for (size_t j = 0; j < circles.size(); j++) {
+                    cv::Vec3i c = circles[i];
+                    if (sqrt((cx-c[0])*(cx-c[0]) + (cy-c[1])*(cy-c[1])) < c[2]) {
+                        if (cy<cy_min) {
+                            cy_min = cy;
+                            cx_min = cx;
+                        }
+                        break;
+                    }
                 }
-                // Draw contours on the original frame
-                drawContours(frame, contours, static_cast<int>(i), cv::Scalar(0, 255, 0), 2);
-                circle(frame, cv::Point(cx, cy), 7, cv::Scalar(0, 0, 255), -1);
+
             }
         }
     }
+    // Draw contours on the original frame
+    // drawContours(frame, contours, static_cast<int>(i), cv::Scalar(0, 255, 0), 2);
+    cv::circle(frame, cv::Point(cx_min, cy_min), 7, cv::Scalar(0, 0, 255), -1);
     if (cx_min <640 && cy_min < 640){
-    std::cout << cx << " " << cy << std::endl;
-    geometry_msgs::Vector3 k;
-    k.x = cx_min;
-    k.y = cy_min;
-    docking_center_publisher.publish(k);
+    // std::cout << cx << " " << cy << std::endl;
+        geometry_msgs::Vector3 k;
+        k.x = cx_min;
+        k.y = cy_min;
+        docking_center_publisher.publish(k);
     }
     cv::resizeWindow("Camera Down View", 640, 480);
     cv::moveWindow("Camera Down View", 1280, 0);
