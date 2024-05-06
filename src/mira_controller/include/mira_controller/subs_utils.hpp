@@ -48,10 +48,11 @@ class Subscriber {
         ros::Subscriber             telemetry_sub;
         ros::Subscriber             error_sub;
         void telemetryCallback(const custom_msgs::telemetry::ConstPtr& msg) {
-            depth_error             = 0;
+            depth_error             = 1050 - msg->external_pressure;
             yaw_comp_reading        = msg->heading;
             if (service_called==true) {
-                yaw_error               = marked_yaw - yaw_comp_reading;
+                // yaw_error               = marked_yaw - yaw_comp_reading;
+                yaw_error               = 90 - yaw_comp_reading;
             }
         }
         void dockCallback(const geometry_msgs::Quaternion::ConstPtr& msg) {

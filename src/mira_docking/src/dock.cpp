@@ -66,8 +66,8 @@ class Docking24 {
             float forward_error, lateral_error, heading_error;  
             for (int i=0; i<no_of_arucos; i++) {
                 if (msg->data[i*no_of_arucos] == 96) {
-                    forward_error = 150+(-1*msg->data[i*no_of_arucos + 2] + 240);
-                    lateral_error = 200+(-1*msg->data[i*no_of_arucos + 3] + 320);
+                    forward_error = (-1*msg->data[i*no_of_arucos + 2] + 240);
+                    lateral_error = (-1*msg->data[i*no_of_arucos + 3] + 320);
                     heading_error = msg->data[i*no_of_arucos + 1]; 
                     std::cout << "forward: "<< forward_error << ", lateral: " << lateral_error << ", yaw: " << heading_error << std::endl;
                     if (yaw_locked==false) {

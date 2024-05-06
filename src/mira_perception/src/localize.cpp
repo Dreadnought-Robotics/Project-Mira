@@ -333,9 +333,9 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     gray.rows/16, // change this value to detect circles with different distances to each other
     100, 30, 1, 30); // change the last two parameters (min_radius & max_radius) to detect larger circles
 
-    // Color thresholding
-    cv::Scalar lower_rgb(50, 110, 90);
-    cv::Scalar upper_rgb(90, 160, 120);
+    // Color thresholding 67,54,77
+    cv::Scalar lower_rgb(90, 160, 130);
+    cv::Scalar upper_rgb(100, 170, 140);
     cv::Mat img_rgb;
     cv::cvtColor(frame, img_rgb, cv::COLOR_BGR2RGB);
 
@@ -357,20 +357,23 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
             if (M.m00 != 0) {
                 cx = static_cast<int>(M.m10 / M.m00);
                 cy = static_cast<int>(M.m01 / M.m00);
-                for (size_t j = 0; j < circles.size(); j++) {
-                    cv::Vec3i c = circles[i];
-                    if (sqrt((cx-c[0])*(cx-c[0]) + (cy-c[1])*(cy-c[1])) < c[2]) {
+                // for (size_t j = 0; j < circles.size(); j++) {
+                //     cv::Vec3i c = circles[i];
+                //     cv::Point center = cv::Point(c[0], c[1]);
+                //     circle( frame, center, 1, cv::Scalar(0,100,100), 3, cv::LINE_AA);
+                    // if (sqrt((cx-c[0])*(cx-c[0]) + (cy-c[1])*(cy-c[1])) < c[2]+30) {
                         if (cy<cy_min) {
                             cy_min = cy;
                             cx_min = cx;
                         }
-                        break;
-                    }
-                }
-
+                        // break;
+                    // }
+                // }
+            drawContours(frame, contours, static_cast<int>(i), cv::Scalar(0, 255, 0), 2);
             }
         }
     }
+    std::cout << cx_min << ", " << cy_min << ", " << circles.size() <<std::endl;
     // Draw contours on the original frame
     // drawContours(frame, contours, static_cast<int>(i), cv::Scalar(0, 255, 0), 2);
     cv::circle(frame, cv::Point(cx_min, cy_min), 7, cv::Scalar(0, 0, 255), -1);
