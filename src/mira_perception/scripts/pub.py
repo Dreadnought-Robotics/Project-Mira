@@ -9,7 +9,7 @@ def main():
     rospy.init_node('video_publisher', anonymous=True)
     rate = rospy.Rate(60)  # Adjust the rate as needed
 
-    cap = cv2.VideoCapture("/home/shasankgunturu/Desktop/IMG_4489.MOV")
+    cap = cv2.VideoCapture(0)
     if not cap.isOpened():
         rospy.logerr("Error opening camera")
         return
