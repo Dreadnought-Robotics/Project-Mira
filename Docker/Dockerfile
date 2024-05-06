@@ -18,8 +18,6 @@ RUN apt-get update && \
 
 RUN apt-get install -y libopencv-dev
 
-COPY src/ /mira_ws/src
-
 SHELL ["/bin/bash", "-c"]
 
 RUN source /opt/ros/noetic/setup.bash
