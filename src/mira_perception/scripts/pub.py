@@ -9,7 +9,7 @@ def main():
     rospy.init_node('video_publisher', anonymous=True)
     rate = rospy.Rate(60)  # Adjust the rate as needed
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture("/home/shasankgunturu/Desktop/IMG_4489.MOV")
     if not cap.isOpened():
         rospy.logerr("Error opening camera")
         return
@@ -22,6 +22,8 @@ def main():
 
     while not rospy.is_shutdown():
         ret, frame = cap.read()
+        # frame = cv2.imread("/home/shasankgunturu/Desktop/bru.png")
+        # frame.resize((480,640))
         cv2.imshow("bruh", frame)
         cv2.waitKey(1)
         if ret:

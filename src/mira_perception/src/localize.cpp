@@ -42,8 +42,13 @@ cv::Mat distortion_coefficients                          = (cv::Mat_<double>(1, 
 float MARKER_SIZE                                       = 15;
 cv::Ptr<cv::aruco::Dictionary> marker_dict              = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_ARUCO_ORIGINAL);
 cv::Ptr<cv::aruco::DetectorParameters> param_markers    = cv::aruco::DetectorParameters::create();
-ros::Publisher                                          waypoint_publisher, pixel_publisher;
-
+ros::Publisher                                          waypoint_publisher, pixel_publisher, docking_center_publisher;
+int width = 640;
+int height = 480;
+int crop_width = width / 2;
+int crop_height = height / 2;
+int crop_x = width - crop_width;
+int crop_y = 0;
 // D = [-0.4812806594873973, 0.2745181609001952, 0.004042548280670333, -0.006039934872833289, 0.0]
 // K = [664.7437142005466, 0.0, 315.703082526844, 0.0, 669.5841391770296, 252.84811434264267, 0.0, 0.0, 1.0]
 // R = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
@@ -55,9 +60,9 @@ class Aruco {
         float                                   roll, pitch, yaw; //pose
         std::vector<cv::Point2f>                marker_corners;
         cv::Vec3d                               rVec, tVec;
-        std::vector<float> world_coordinates;//    = std::vector<float>(3);
-        std::vector<float> pivot_coordinates;//    = std::vector<float>(3);
-        std::vector<float> closest_coordinates;//  = std::vector<float>(3);
+        std::vector<float>                      world_coordinates;//    = std::vector<float>(3);
+        std::vector<float>                      pivot_coordinates;//    = std::vector<float>(3);
+        std::vector<float>                      closest_coordinates;//  = std::vector<float>(3);
         cv::Mat                                 frame;
         int                                     pix_y, pix_x;
         float                                   a, b, c=72.11, alpha, theta1, theta2, theta3;
@@ -77,6 +82,7 @@ class Aruco {
             pix_x   = center.x;
             cv::drawFrameAxes(frame, camera_matrix, distortion_coefficients, rVec, tVec, MARKER_SIZE*1.5);
             cv::Mat ret = getCornersInWorldFrame(center, rVec, tVec);
+
             // for (int j=0; j<3; j++) {
             //     ret.at<double>(j,0) = ret.at<double>(j,0)/100;
             // }
@@ -176,7 +182,8 @@ class Aruco {
             roll_x = roll_x * 180 / CV_PI;
             pitch_y = pitch_y * 180 / CV_PI;
             yaw_z = yaw_z * 180 / CV_PI;
-
+            yaw = yaw_z;
+            std::cout << "yaw: " << yaw_z << std::endl;
             cv::Mat pixels = cv::Mat::zeros(3,1,CV_64F);
             pixels.at<double>(0) = center.x;
             pixels.at<double>(1) = center.y;
@@ -216,12 +223,11 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
         std::vector<cv::Vec3d> rVec, tVec;
         cv::aruco::estimatePoseSingleMarkers(marker_corners, MARKER_SIZE, camera_matrix, distortion_coefficients, rVec, tVec);
         std_msgs::Float32MultiArray f, p;
-        std::vector<std::vector<float>> prev_values(10, std::vector<float> (3));
         left_top.frame      = frame;
         left_bottom.frame   = frame;
         right_bottom.frame  = frame;
         right_top.frame     = frame;
-        // std::vector<float> prev_mean
+        std::vector<float> aruco;
         for(int i=0; i<marker_IDs.size(); i++) {
             // std::cout << "i = " << i << "; ID = " << marker_IDs[i] << std::endl;
             if (marker_IDs[i]==IDTOPLEFT) {
@@ -316,6 +322,65 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
         waypoint_publisher.publish(f);
         pixel_publisher.publish(p);
     }
+    cv::Rect crop_roi(crop_x, crop_y, crop_width, crop_height);
+    cv::Mat new_frame = frame(crop_roi);
+
+    cv::Mat gray;
+    cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+    cv::medianBlur(gray, gray, 5);
+    std::vector<cv::Vec3f> circles;
+    cv::HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1,
+    gray.rows/16, // change this value to detect circles with different distances to each other
+    100, 30, 1, 30); // change the last two parameters (min_radius & max_radius) to detect larger circles
+
+    // Color thresholding
+    cv::Scalar lower_rgb(50, 110, 90);
+    cv::Scalar upper_rgb(90, 160, 120);
+    cv::Mat img_rgb;
+    cv::cvtColor(frame, img_rgb, cv::COLOR_BGR2RGB);
+
+    cv::Mat mask;
+    cv::inRange(img_rgb, lower_rgb, upper_rgb, mask);
+
+    // Find contours in the binary mask
+    std::vector<std::vector<cv::Point>> contours;
+    std::vector<cv::Vec4i> hierarchy;
+    cv::findContours(mask, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+    // cv::Mat contour_frame = frame.clone();
+    // cv::Mat contour_frame2 = mask.clone();
+    int cx, cy;
+    int cy_min = 999, cx_min = 999;
+    for (size_t i = 0; i < contours.size(); i++) {
+        if (contourArea(contours[i]) > 200) {
+            cv::Moments M = moments(contours[i]);
+            if (M.m00 != 0) {
+                cx = static_cast<int>(M.m10 / M.m00);
+                cy = static_cast<int>(M.m01 / M.m00);
+                for (size_t j = 0; j < circles.size(); j++) {
+                    cv::Vec3i c = circles[i];
+                    if (sqrt((cx-c[0])*(cx-c[0]) + (cy-c[1])*(cy-c[1])) < c[2]) {
+                        if (cy<cy_min) {
+                            cy_min = cy;
+                            cx_min = cx;
+                        }
+                        break;
+                    }
+                }
+
+            }
+        }
+    }
+    // Draw contours on the original frame
+    // drawContours(frame, contours, static_cast<int>(i), cv::Scalar(0, 255, 0), 2);
+    cv::circle(frame, cv::Point(cx_min, cy_min), 7, cv::Scalar(0, 0, 255), -1);
+    if (cx_min <640 && cy_min < 640){
+    // std::cout << cx << " " << cy << std::endl;
+        geometry_msgs::Vector3 k;
+        k.x = cx_min;
+        k.y = cy_min;
+        docking_center_publisher.publish(k);
+    }
     cv::resizeWindow("Camera Down View", 640, 480);
     cv::moveWindow("Camera Down View", 1280, 0);
     cv::imshow("Camera Down View", frame);
@@ -328,6 +393,7 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh;
     ros::Subscriber image_subscriber    = nh.subscribe("/camera_down/image_raw/compressed", 1, imageCallback);
     waypoint_publisher                  = nh.advertise<std_msgs::Float32MultiArray>("/aruco/waypoints", 1);
+    docking_center_publisher            = nh.advertise<geometry_msgs::Vector3>("/docking/center", 1);
     pixel_publisher                     = nh.advertise<std_msgs::Float32MultiArray>("/aruco/pixels", 1);
     ros::spin();
 }
