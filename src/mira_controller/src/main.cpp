@@ -41,7 +41,7 @@ void keys_callback(const std_msgs::Char::ConstPtr& msg) {
         cmd_pwm.arm = true;
         std::cout << "armed\n";
     }
-else if (key == 'w') {
+    else if (key == 'w') {
         lateral.kp = lateral.kp+0.1;
         std::cout <<"current lateral kp value: "+ std::to_string(lateral.kp) << std::endl;
     }

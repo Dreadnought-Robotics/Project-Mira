@@ -1,0 +1,24 @@
+else if (key == 'w') {
+        lateral.kp = lateral.kp+0.1;
+        std::cout <<"current lateral kp value: "+ std::to_string(lateral.kp) << std::endl;
+    }
+    else if (key == 's') {
+        lateral.kp = lateral.kp-0.5;
+        std::cout <<"current lateral kp value: "+ std::to_string(lateral.kp)<< std::endl;
+    }
+    else if (key == 'e') {
+        lateral.ki = lateral.ki+0.001;
+        std::cout <<"current lateral ki value: "+ std::to_string(lateral.ki) << std::endl;
+    }
+    else if (key == 'd') {
+        lateral.ki = lateral.ki-0.001;
+        std::cout <<"current lateral ki value: "+ std::to_string(lateral.ki)<< std::endl;
+    }
+    else if (key == 'r') {
+        lateral.kd = lateral.kd+0.1;
+        std::cout <<"current lateral kd value: "+ std::to_string(lateral.kd) << std::endl;
+    }
+    else if (key == 'f') {
+        lateral.kd = lateral.kd-0.1;
+        std::cout <<"current lateral kd value: "+ std::to_string(lateral.kd)<< std::endl;
+    }
