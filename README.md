@@ -43,7 +43,7 @@ Before running the packages, add the following lines to your `~/.bashrc` file:
 ```bash
 export ROS_IP=192.168.2.3
 export ROS_MASTER_URI=http://192.168.2.1:11311
-export ROS_HOSTNAME=192.168.2.1
+export ROS_HOSTNAME=192.168.2.3
 ```
 
 After adding the lines, source your workspace where this repository is cloned:
