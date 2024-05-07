@@ -123,6 +123,8 @@ include_directories(
 )
 add_executable(dock src/dock.cpp)
 target_link_libraries(dock  ${catkin_LIBRARIES})
+add_executable(pose_dock src/pose_dock.cpp)
+target_link_libraries(pose_dock  ${catkin_LIBRARIES})
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/mira_docking.cpp

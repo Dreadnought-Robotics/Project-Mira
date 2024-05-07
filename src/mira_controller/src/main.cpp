@@ -84,12 +84,12 @@ int main(int argc, char **argv) {
     depth.kp                            = 1.2;
     depth.ki                            = 0.036;
     depth.kd                            = 1.2;
-    forward.kp                          = 0;
+    forward.kp                          = 0.2;
     forward.ki                          = 0;
-    forward.kd                          = 0;
-    lateral.kp                          = 0;
-    lateral.ki                          = 0;
-    lateral.kd                          = 0;
+    forward.kd                          = 2.5;
+    lateral.kp                          = 0.15;
+    lateral.ki                          = 0.1;
+    lateral.kd                          = 0.5;
     bool arm                            = false;
     ros::Time init_time                 = ros::Time::now();
     cmd_pwm.arm                         = false;
