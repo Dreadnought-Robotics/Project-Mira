@@ -42,28 +42,28 @@ void keys_callback(const std_msgs::Char::ConstPtr& msg) {
         std::cout << "armed\n";
     }
     else if (key == 'w') {
-        lateral.kp = lateral.kp+0.1;
-        std::cout <<"current lateral kp value: "+ std::to_string(lateral.kp) << std::endl;
+        forward.kp = forward.kp+0.1;
+        std::cout <<"current forward kp value: "+ std::to_string(forward.kp) << std::endl;
     }
     else if (key == 's') {
-        lateral.kp = lateral.kp-0.5;
-        std::cout <<"current lateral kp value: "+ std::to_string(lateral.kp)<< std::endl;
+        forward.kp = forward.kp-0.1;
+        std::cout <<"current forward kp value: "+ std::to_string(forward.kp)<< std::endl;
     }
     else if (key == 'e') {
-        lateral.ki = lateral.ki+0.001;
-        std::cout <<"current lateral ki value: "+ std::to_string(lateral.ki) << std::endl;
+        forward.ki = forward.ki+0.001;
+        std::cout <<"current forward ki value: "+ std::to_string(forward.ki) << std::endl;
     }
     else if (key == 'd') {
-        lateral.ki = lateral.ki-0.001;
-        std::cout <<"current lateral ki value: "+ std::to_string(lateral.ki)<< std::endl;
+        forward.ki = forward.ki-0.001;
+        std::cout <<"current forward ki value: "+ std::to_string(forward.ki)<< std::endl;
     }
     else if (key == 'r') {
-        lateral.kd = lateral.kd+0.1;
-        std::cout <<"current lateral kd value: "+ std::to_string(lateral.kd) << std::endl;
+        forward.kd = forward.kd+0.1;
+        std::cout <<"current forward kd value: "+ std::to_string(forward.kd) << std::endl;
     }
     else if (key == 'f') {
-        lateral.kd = lateral.kd-0.1;
-        std::cout <<"current lateral kd value: "+ std::to_string(lateral.kd)<< std::endl;
+        forward.kd = forward.kd-0.1;
+        std::cout <<"current forward kd value: "+ std::to_string(forward.kd)<< std::endl;
     }
     else if (key == 'm') {
         std::cout <<"Forward switch"<< std::endl;
@@ -84,18 +84,21 @@ int main(int argc, char **argv) {
     depth.kp                            = 1.2;
     depth.ki                            = 0.036;
     depth.kd                            = 1.2;
-    forward.kp                          = 0.2;
-    forward.ki                          = 0;
-    forward.kd                          = 2.5;
-    lateral.kp                          = 0.15;
-    lateral.ki                          = 0.1;
-    lateral.kd                          = 0.5;
+    // depth.kp                            = 2.7;
+    // depth.ki                            = 0.07;
+    // depth.kd                            = 0.5;
+    forward.kp                          = 0.25;
+    forward.ki                          = 0.01;
+    forward.kd                          = 2;
+    lateral.kp                          = 0.25;
+    lateral.ki                          = 0;
+    lateral.kd                          = 0;
     bool arm                            = false;
     ros::Time init_time                 = ros::Time::now();
     cmd_pwm.arm                         = false;
     while (ros::ok()) {
         cmd_pwm.mode                    = "STABILIZE";
-        // std::cout << su
+        // std::cout << subs.depth_error << std::endl;
         ros::Time time_now              = ros::Time::now();
         float pid_forward               = forward.pid_control(subs.forward_error,(time_now-init_time).toSec(), true);
         float pid_lateral               = lateral.pid_control(subs.lateral_error,(time_now-init_time).toSec(), false);
@@ -129,7 +132,10 @@ int main(int argc, char **argv) {
         if (subs.depth_service_called==true) {
             cmd_pwm.thrust = 1450;
         }
-            cmd_pwm.yaw                 = 1500;
+            // cmd_pwm.yaw                 = 1500;
+            // cmd_pwm.thrust                 = 1500;
+            // cmd_pwm.forward                 = 1500;
+            // cmd_pwm.lateral                 = 1500;
         std_msgs::Float32MultiArray v;
         pwm_publisher.publish(cmd_pwm);
         ros::spinOnce();

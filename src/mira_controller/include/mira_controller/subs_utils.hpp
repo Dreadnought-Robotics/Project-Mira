@@ -10,7 +10,7 @@ class Subscriber {
     public:
         bool                        service_called = false, depth_service_called = false;
         double                      depth_error, yaw_error, forward_error, lateral_error, pid_depth, pid_yaw;
-        double                      angular_velocity_z, yaw_comp_reading, marked_yaw;
+        double                      angular_velocity_z, yaw_comp_reading, marked_yaw, marked_depth, depth_external;
         Subscriber(ros::NodeHandle nh) {
             yaw_lock                = nh.advertiseService("/yaw/lock", &Subscriber::emptyYawServiceCallback, this);
             depth_lock              = nh.advertiseService("/depth/lock", &Subscriber::emptyDepthServiceCallback, this);
@@ -33,7 +33,7 @@ class Subscriber {
         bool emptyDepthServiceCallback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
             depth_service_called = !depth_service_called;
             if (depth_service_called==true) {
-                // marked_yaw = yaw_comp_reading;
+                marked_depth = depth_external;
                 ROS_INFO("Service set to true");
             }
             else {
@@ -48,11 +48,16 @@ class Subscriber {
         ros::Subscriber             telemetry_sub;
         ros::Subscriber             error_sub;
         void telemetryCallback(const custom_msgs::telemetry::ConstPtr& msg) {
-            depth_error             = 1050 - msg->external_pressure;
+            depth_error             = 0;//1030 - msg->external_pressure;
+            depth_external          = msg->external_pressure;
             yaw_comp_reading        = msg->heading;
             if (service_called==true) {
-                // yaw_error               = marked_yaw - yaw_comp_reading;
-                yaw_error               = 90 - yaw_comp_reading;
+                yaw_error               = marked_yaw - yaw_comp_reading;
+                // yaw_error               = 90 - yaw_comp_reading;
+            }
+            if (depth_service_called==true) {
+                depth_error               = marked_depth - depth_external;
+                // yaw_error               = 90 - yaw_comp_reading;
             }
         }
         void dockCallback(const geometry_msgs::Quaternion::ConstPtr& msg) {

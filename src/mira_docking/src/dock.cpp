@@ -46,8 +46,8 @@ class Docking24 {
                     min_distance    = curr_dist;
                     closest_aruco   = msg->data[i*no_of_arucos];
                     min_index       = i*no_of_arucos;
-                    forward_error   = msg->data[i*no_of_arucos+2];
-                    lateral_error   = msg->data[i*no_of_arucos+3];
+                    forward_error   = 100+msg->data[i*no_of_arucos+2];
+                    lateral_error   = 100+msg->data[i*no_of_arucos+3];
                     std::cout << forward_error << ", " << lateral_error << std::endl;
                     geometry_msgs::Quaternion q;
                     q.w = 0;//heading_error;
