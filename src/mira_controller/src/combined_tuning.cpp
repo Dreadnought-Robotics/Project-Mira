@@ -45,10 +45,10 @@ void keys_callback(const std_msgs::Char::ConstPtr& msg) {
         tuning_mode = false;
         tuning_axis = '\0';
         cout<<"--------PID values for each axis--------"<<endl;
-        cout<<"Depth PID: "<<depth.kp<<" "<<depth.ki<<" "<<depth.kd<<endl;
-        cout<<"Forward PID: "<<forward.kp<<" "<<forward.ki<<" "<<forward.kd<<endl;
-        cout<<"Lateral PID: "<<lateral.kp<<" "<<lateral.ki<<" "<<lateral.kd<<endl;
-        cout<<"Yaw PID: "<<yaw.kp<<" "<<yaw.ki<<" "<<yaw.kd<<endl;        
+        cout<<"Depth PID: "<<depth.kp<<","<<depth.ki<<","<<depth.kd<<endl;
+        cout<<"Forward PID: "<<forward.kp<<","<<forward.ki<<","<<forward.kd<<endl;
+        cout<<"Lateral PID: "<<lateral.kp<<","<<lateral.ki<<","<<lateral.kd<<endl;
+        cout<<"Yaw PID: "<<yaw.kp<<","<<yaw.ki<<","<<yaw.kd<<endl;        
     } 
     else if (key == 'd') {
         tuning_mode = true;
