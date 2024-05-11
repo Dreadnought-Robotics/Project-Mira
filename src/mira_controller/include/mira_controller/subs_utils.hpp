@@ -18,6 +18,25 @@ class Subscriber {
             error_sub               = nh.subscribe("/docking/errors", 1, &Subscriber::dockCallback, this);
         }
     private:
+        float euler_from_quaternion(double x, double y, double z, double w) {
+            float yaw;
+            // // roll (x-axis rotation)
+            // double sinr_cosp = +2.0 * (w * x + y * z);
+            // double cosr_cosp = +1.0 - 2.0 * (x * x + y * y);
+            // roll = atan2(sinr_cosp, cosr_cosp);
+
+            // // pitch (y-axis rotation)
+            // double sinp = +2.0 * (w * y - z * x);
+            // if (fabs(sinp) >= 1)
+            //     pitch = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+            // else
+            //     pitch = asin(sinp);
+
+            // yaw (z-axis rotation)
+            double siny_cosp = +2.0 * (w * z + x * y);
+            double cosy_cosp = +1.0 - 2.0 * (y * y + z * z);
+            yaw = atan((-1*siny_cosp)/(-1*cosy_cosp));
+        }
         bool emptyYawServiceCallback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
             service_called = !service_called;
             if (service_called==true) {
@@ -48,16 +67,17 @@ class Subscriber {
         ros::Subscriber             telemetry_sub;
         ros::Subscriber             error_sub;
         void telemetryCallback(const custom_msgs::telemetry::ConstPtr& msg) {
-            depth_error             = 1030 - msg->external_pressure;
+            depth_error             = 1025 - msg->external_pressure;
+            yaw_comp_reading        = euler_from_quaternion(msg->q1, msg->q2, msg->q3, msg->q4);
             // std::cout << "Printing from subs: " << msg->external_pressure << std::endl;
             depth_external          = msg->external_pressure;
-            yaw_comp_reading        = msg->heading;
+            // yaw_comp_reading        = msg->heading;
             if (service_called==true) {
                 yaw_error               = marked_yaw - yaw_comp_reading;
                 // yaw_error               = 90 - yaw_comp_reading;
             }
             if (depth_service_called==true) {
-                depth_error               = marked_depth - depth_external;
+                depth_error               = 1070 - depth_external;
                 // yaw_error               = 90 - yaw_comp_reading;
             }
         }
