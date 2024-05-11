@@ -48,7 +48,8 @@ class Subscriber {
         ros::Subscriber             telemetry_sub;
         ros::Subscriber             error_sub;
         void telemetryCallback(const custom_msgs::telemetry::ConstPtr& msg) {
-            depth_error             = 0;//1030 - msg->external_pressure;
+            depth_error             = 1030 - msg->external_pressure;
+            // std::cout << "Printing from subs: " << msg->external_pressure << std::endl;
             depth_external          = msg->external_pressure;
             yaw_comp_reading        = msg->heading;
             if (service_called==true) {
