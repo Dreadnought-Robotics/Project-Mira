@@ -1,10 +1,11 @@
 #include <ros/ros.h>
 #include <custom_msgs/telemetry.h>
+// #include <opencv2/opencv.hpp>
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Quaternion.h>
 #include <std_msgs/Float32MultiArray.h>
 #include "std_srvs/Empty.h"
-
+#define CV_PI   3.1415926535897932384626433832795
 
 class Subscriber {
     public:
@@ -36,6 +37,8 @@ class Subscriber {
             double siny_cosp = +2.0 * (w * z + x * y);
             double cosy_cosp = +1.0 - 2.0 * (y * y + z * z);
             yaw = atan((-1*siny_cosp)/(-1*cosy_cosp));
+            yaw = yaw * 180 / CV_PI;
+            return yaw;
         }
         bool emptyYawServiceCallback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
             service_called = !service_called;
@@ -67,17 +70,21 @@ class Subscriber {
         ros::Subscriber             telemetry_sub;
         ros::Subscriber             error_sub;
         void telemetryCallback(const custom_msgs::telemetry::ConstPtr& msg) {
-            depth_error             = 1025 - msg->external_pressure;
-            yaw_comp_reading        = euler_from_quaternion(msg->q1, msg->q2, msg->q3, msg->q4);
-            // std::cout << "Printing from subs: " << msg->external_pressure << std::endl;
+            depth_error             = 1030 - msg->external_pressure;
+            // yaw_comp_reading        = euler_from_quaternion(msg->q1, msg->q2, msg->q3, msg->q4);
+            yaw_comp_reading        = msg->yawspeed;
+            yaw_comp_reading        = yaw_comp_reading * 180 / CV_PI;
+            std::cout << yaw_comp_reading << std::endl;
+            // std::cout << "Printing from subs: " << yaw_comp_reading << std::endl;
             depth_external          = msg->external_pressure;
             // yaw_comp_reading        = msg->heading;
             if (service_called==true) {
                 yaw_error               = marked_yaw - yaw_comp_reading;
+                // yaw_error               = msg->yawspeed;
                 // yaw_error               = 90 - yaw_comp_reading;
             }
             if (depth_service_called==true) {
-                depth_error               = 1070 - depth_external;
+                depth_error               = 1080 - depth_external;
                 // yaw_error               = 90 - yaw_comp_reading;
             }
         }

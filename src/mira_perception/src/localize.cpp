@@ -337,16 +337,18 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     cv::HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1,
     gray.rows/16, // change this value to detect circles with different distances to each other
     100, 30, 1, 30); // change the last two parameters (min_radius & max_radius) to detect larger circles
-    cv::Scalar lower_rgb(80, 145, 110);
-    cv::Scalar upper_rgb(90, 155, 125);
+    cv::Scalar lower_rgb(60, 110, 90);
+    cv::Scalar upper_rgb(80, 130, 110);
     // Color thresholding 67,54,77
-    if (depth<1065) {
-    lower_rgb={80, 145, 110};
-    upper_rgb={90, 155, 125};
+    if (depth<1060) {
+    // lower_rgb={60, 105, 90};
+    // upper_rgb={80, 130, 110};
+    lower_rgb={150, 200, 160};
+    upper_rgb={180, 220, 180};
     std::cout << depth << std::endl;
     }
     else {
-    lower_rgb={60, 110, 80};
+    lower_rgb={55, 100, 90};
     upper_rgb={100, 150, 130};  
     }
     cv::Mat img_rgb;

@@ -198,6 +198,11 @@ int main(int argc, char **argv) {
             float pid_lateral               = lateral.pid_control(subs.lateral_error,(time_now-init_time).toSec(), false);
             float pid_depth                 = depth.pid_control(subs.depth_error,(time_now-init_time).toSec(), false);
             float pid_yaw                   = yaw.pid_control(subs.yaw_error,(time_now-init_time).toSec(), true);
+            // if (subs.service_called==true) {
+            //     yaw.kp = 0.2;
+            //     yaw.ki = 0;
+            //     yaw.kd = 0;
+            // }
             // std::cout << subs.yaw_error << std::endl;
             if (sqrt(pow(subs.forward_error,2))>threshold) {
                 // if (forward_bool) {
@@ -226,9 +231,9 @@ int main(int argc, char **argv) {
             // if (subs.depth_service_called==true) {
             //     cmd_pwm.thrust = 1450;
             // }
-                // cmd_pwm.yaw                 = 1500;
+                cmd_pwm.yaw                 = 1500;
                 // cmd_pwm.thrust                 = 1500;
-                // cmd_pwm.forward                 = 1500;
+                cmd_pwm.forward                 = 1570;
                 // cmd_pwm.lateral                 = 1500;
             std_msgs::Float32MultiArray v;
         }
