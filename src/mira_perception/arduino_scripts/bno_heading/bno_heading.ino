@@ -5,7 +5,7 @@
 #define BNO08X_CS 10
 #define BNO08X_INT 9
 
-// #define FAST_MODE
+ #define FAST_MODE
 
 // For SPI mode, we also need a RESET 
 //#define BNO08X_RESET 5

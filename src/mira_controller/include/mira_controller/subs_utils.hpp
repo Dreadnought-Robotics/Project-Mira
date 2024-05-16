@@ -3,7 +3,7 @@
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Quaternion.h>
 #include <std_msgs/Float32MultiArray.h>
-#include <std_msgs/Int32.h>
+#include <std_msgs/Float32.h>
 #include "std_srvs/Empty.h"
 #define CV_PI   3.1415926535897932384626433832795
 
@@ -33,6 +33,7 @@ class Subscriber {
             service_called = !service_called;
             if (service_called==true) {
                 marked_yaw = yaw_comp_reading;
+                std::cout << "marked yaw: " << marked_yaw << std::endl;
                 ROS_INFO("Service set to true");
             }
             else {
@@ -60,7 +61,7 @@ class Subscriber {
         ros::Subscriber             error_sub;
         ros::Subscriber             heading_sub;
         void telemetryCallback(const custom_msgs::telemetry::ConstPtr& msg) {
-            depth_error             = 1030 - msg->external_pressure;
+            depth_error             = 1025 - msg->external_pressure;
             // yaw_comp_reading        = euler_from_quaternion(msg->q1, msg->q2, msg->q3, msg->q4);
             // // yaw_comp_reading        = msg->yawspeed;
             // yaw_comp_reading        = yaw_comp_reading * 180 / CV_PI;
@@ -72,7 +73,7 @@ class Subscriber {
             // yaw_comp_reading        = msg->heading;
             
             if (depth_service_called==true) {
-                depth_error               = 1080 - depth_external;
+                depth_error               = 1110 - depth_external;
                 // yaw_error               = 90 - yaw_comp_reading;
             }
         }
@@ -80,12 +81,13 @@ class Subscriber {
             if (service_called==false) {
                 yaw_error               = msg->w;
             }
+            // std::cout << "yaw error: " << yaw_error << std::endl;
             forward_error           = msg->x;
             lateral_error           = msg->y;
         }
-        void headingCallback(const std_msgs::Int32::ConstPtr& msg) {
+        void headingCallback(const std_msgs::Float32::ConstPtr& msg) {
             yaw_comp_reading = msg->data;
-            std::cout << yaw_comp_reading << std::endl;
+            // std::cout << yaw_comp_reading << std::endl;
             if (service_called==true) {
                 yaw_error               = marked_yaw - yaw_comp_reading;
                 // yaw_error               = msg->yawspeed;

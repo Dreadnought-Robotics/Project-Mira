@@ -66,28 +66,28 @@ void keys_callback(const std_msgs::Char::ConstPtr& msg) {
         std::cout <<"current forward kd value: "+ std::to_string(forward.kd)<< std::endl;
     }
     else if (key == 't') {
-        lateral.kp = lateral.kp+0.005;
-        std::cout <<"current lateral kp value: "+ std::to_string(lateral.kp) << std::endl;
+        yaw.kp = yaw.kp+0.005;
+        std::cout <<"current yaw kp value: "+ std::to_string(yaw.kp) << std::endl;
     }
     else if (key == 'g') {
-        lateral.kp = lateral.kp-0.005;
-        std::cout <<"current lateral kp value: "+ std::to_string(lateral.kp)<< std::endl;
+        yaw.kp = yaw.kp-0.005;
+        std::cout <<"current yaw kp value: "+ std::to_string(yaw.kp)<< std::endl;
     }
     else if (key == 'y') {
-        lateral.ki = lateral.ki+0.001;
-        std::cout <<"current lateral ki value: "+ std::to_string(lateral.ki) << std::endl;
+        yaw.ki = yaw.ki+0.001;
+        std::cout <<"current yaw ki value: "+ std::to_string(yaw.ki) << std::endl;
     }
     else if (key == 'h') {
-        lateral.ki = lateral.ki-0.001;
-        std::cout <<"current lateral ki value: "+ std::to_string(lateral.ki)<< std::endl;
+        yaw.ki = yaw.ki-0.001;
+        std::cout <<"current yaw ki value: "+ std::to_string(yaw.ki)<< std::endl;
     }
     else if (key == 'u') {
-        lateral.kd = lateral.kd+0.1;
-        std::cout <<"current lateral kd value: "+ std::to_string(lateral.kd) << std::endl;
+        yaw.kd = yaw.kd+0.1;
+        std::cout <<"current yaw kd value: "+ std::to_string(yaw.kd) << std::endl;
     }
     else if (key == 'j') {
-        lateral.kd = lateral.kd-0.1;
-        std::cout <<"current lateral kd value: "+ std::to_string(lateral.kd)<< std::endl;
+        yaw.kd = yaw.kd-0.1;
+        std::cout <<"current yaw kd value: "+ std::to_string(yaw.kd)<< std::endl;
     }
     else if (key == 'm') {
         std::cout <<"Forward switch"<< std::endl;
@@ -174,9 +174,12 @@ int main(int argc, char **argv) {
     ros::Subscriber keys_subscriber     = nh.subscribe("keys", 1, keys_callback);
 
     Subscriber                          subs(nh);
-    yaw.kp                              = 0.4;
-    yaw.ki                              = 0.02;
-    yaw.kd                              = 3.7;
+    // yaw.kp                              = 0.4;
+    // yaw.ki                              = 0.02;
+    // yaw.kd                              = 3.7;
+    yaw.kp                              = 0.35;
+    yaw.ki                              = 0.027;
+    yaw.kd                              = 5.0;
     depth.kp                            = 0.93;
     depth.ki                            = 0.087;
     depth.kd                            = 12.1;
@@ -197,13 +200,19 @@ int main(int argc, char **argv) {
             float pid_forward               = forward.pid_control(subs.forward_error,(time_now-init_time).toSec(), true);
             float pid_lateral               = lateral.pid_control(subs.lateral_error,(time_now-init_time).toSec(), false);
             float pid_depth                 = depth.pid_control(subs.depth_error,(time_now-init_time).toSec(), false);
-            float pid_yaw                   = yaw.pid_control(subs.yaw_error,(time_now-init_time).toSec(), true);
+            float pid_yaw                   = 0;
+            if (subs.service_called==true) {
+                pid_yaw                   = yaw.pid_control(subs.yaw_error,(time_now-init_time).toSec(), false);
+            }
+            else {
+                pid_yaw                   = yaw.pid_control(subs.yaw_error,(time_now-init_time).toSec(), true);
+            }
             // if (subs.service_called==true) {
             //     yaw.kp = 0.2;
             //     yaw.ki = 0;
             //     yaw.kd = 0;
             // }
-            // std::cout << subs.yaw_error << std::endl;
+            // std::cout << "yaw error: " << subs.yaw_error << std::endl;
             if (sqrt(pow(subs.forward_error,2))>threshold) {
                 // if (forward_bool) {
                     // cmd_pwm.forward         = pid_forward;
@@ -231,10 +240,11 @@ int main(int argc, char **argv) {
             // if (subs.depth_service_called==true) {
             //     cmd_pwm.thrust = 1450;
             // }
-                cmd_pwm.yaw                 = 1500;
+                // cmd_pwm.yaw                 = 1500;
                 // cmd_pwm.thrust                 = 1500;
-                cmd_pwm.forward                 = 1570;
+                // cmd_pwm.forward                 = 1500;
                 // cmd_pwm.lateral                 = 1500;
+            // std::cout << "yaw command: " << cmd_pwm.yaw << std::endl;
             std_msgs::Float32MultiArray v;
         }
         pwm_publisher.publish(cmd_pwm);

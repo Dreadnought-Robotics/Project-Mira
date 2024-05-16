@@ -62,18 +62,22 @@ class Control {
                 // pwm             = 1900 - (pwm+180)*(800)/360;
             }
             // pwm             = 1100 + (pwm+180)*(800)/360;
-            if (sqrt((pwm_prev - pwm)*(pwm_prev - pwm)) > 200) {
-                if (pwm_prev > pwm) {
-                    pwm = pwm_prev-10;
-                    pwm_prev = pwm;
-                    return pwm;
-                }
-                else {
-                    pwm = pwm_prev+10;
-                    pwm_prev = pwm;
-                    return pwm;
-                }
-            }
+            // if (sqrt((pwm_prev - pwm)*(pwm_prev - pwm)) > 30) {
+            //     // ROS_INFO("protection");
+            //     std::cout << "prev: " << pwm_prev << ", pwm: " << pwm << std::endl;
+            //     if (pwm_prev > pwm) {
+            //         pwm = pwm_prev-10;
+            //         pwm_prev = pwm;
+            //         std::cout << "changed pwm: "<< pwm << std::endl;
+            //         return pwm;
+            //     }
+            //     else {
+            //         pwm = pwm_prev+10;
+            //         pwm_prev = pwm;
+            //         std::cout << "changed pwm: "<< pwm << std::endl;
+            //         return pwm;
+            //     }
+            // }
             prev_d = pid_d;
             pwm_prev = pwm;
             // std::cout << "Error stack: " << error_vector.size() << std::endl;
