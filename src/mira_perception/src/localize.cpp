@@ -2,6 +2,7 @@
 #include <opencv2/aruco.hpp>
 #include <iostream>
 #include <ros/ros.h>
+#include <custom_msgs/telemetry.h>
 #include <geometry_msgs/Vector3.h>
 #include <sensor_msgs/CompressedImage.h>
 #include <cv_bridge/cv_bridge.h>
@@ -86,7 +87,7 @@ class Aruco {
             // for (int j=0; j<3; j++) {
             //     ret.at<double>(j,0) = ret.at<double>(j,0)/100;
             // }
-            std::cout << "point: " << ret.t() << std::endl;
+            // std::cout << "point: " << ret.t() << std::endl;
             for (int j=0; j<3; j++) {
                 world_coordinates.push_back(ret.at<double>(j,0));
             }
@@ -183,7 +184,7 @@ class Aruco {
             pitch_y = pitch_y * 180 / CV_PI;
             yaw_z = yaw_z * 180 / CV_PI;
             yaw = yaw_z;
-            std::cout << "yaw: " << yaw_z << std::endl;
+            // std::cout << "yaw: " << yaw_z << std::endl;
             cv::Mat pixels = cv::Mat::zeros(3,1,CV_64F);
             pixels.at<double>(0) = center.x;
             pixels.at<double>(1) = center.y;
@@ -198,6 +199,11 @@ Aruco                       left_bottom(IDBOTTOMLEFT);
 Aruco                       right_bottom(IDBOTTOMRIGHT);
 Aruco                       right_top(IDTOPRIGHT);
 cv_bridge::CvImagePtr       cv_ptr;
+float                       depth;
+
+void depthCallback(const custom_msgs::telemetry::ConstPtr& msg) {
+    depth = msg->external_pressure;
+}
 
 void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     try
@@ -318,7 +324,6 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
                 ROS_WARN("INVALID ARUCO ID FOUND");
             }
         }
-        
         waypoint_publisher.publish(f);
         pixel_publisher.publish(p);
     }
@@ -332,10 +337,20 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     cv::HoughCircles(gray, circles, cv::HOUGH_GRADIENT, 1,
     gray.rows/16, // change this value to detect circles with different distances to each other
     100, 30, 1, 30); // change the last two parameters (min_radius & max_radius) to detect larger circles
-
+    cv::Scalar lower_rgb;
+    cv::Scalar upper_rgb;
     // Color thresholding 67,54,77
-    cv::Scalar lower_rgb(90, 160, 130);
-    cv::Scalar upper_rgb(100, 170, 140);
+    if (depth<1060) {
+    lower_rgb={60, 130, 95};
+    upper_rgb={85, 150, 125};
+    // lower_rgb={150, 200, 160};
+    // upper_rgb={180, 220, 180};
+    // std::cout << depth << std::endl;
+    }
+    else {
+    lower_rgb={55, 100, 90};
+    upper_rgb={100, 150, 130};  
+    }
     cv::Mat img_rgb;
     cv::cvtColor(frame, img_rgb, cv::COLOR_BGR2RGB);
 
@@ -373,7 +388,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
             }
         }
     }
-    std::cout << cx_min << ", " << cy_min << ", " << circles.size() <<std::endl;
+    // std::cout << cx_min << ", " << cy_min << ", " << circles.size() <<std::endl;
     // Draw contours on the original frame
     // drawContours(frame, contours, static_cast<int>(i), cv::Scalar(0, 255, 0), 2);
     cv::circle(frame, cv::Point(cx_min, cy_min), 7, cv::Scalar(0, 0, 255), -1);
@@ -395,6 +410,7 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "localizer_using_aruco");
     ros::NodeHandle nh;
     ros::Subscriber image_subscriber    = nh.subscribe("/camera_down/image_raw/compressed", 1, imageCallback);
+    ros::Subscriber depth_subscriber    = nh.subscribe("/master/telemetry", 1, depthCallback);
     waypoint_publisher                  = nh.advertise<std_msgs::Float32MultiArray>("/aruco/waypoints", 1);
     docking_center_publisher            = nh.advertise<geometry_msgs::Vector3>("/docking/center", 1);
     pixel_publisher                     = nh.advertise<std_msgs::Float32MultiArray>("/aruco/pixels", 1);
