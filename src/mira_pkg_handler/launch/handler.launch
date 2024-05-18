@@ -1,0 +1,3 @@
+<launch>
+    <node name = "handler" pkg = "mira_pkg_handler" type = "handler" output = "screen"/>
+</launch>

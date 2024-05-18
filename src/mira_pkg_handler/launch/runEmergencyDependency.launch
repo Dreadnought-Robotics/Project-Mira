@@ -1,0 +1,3 @@
+<launch>
+    <node name = "runEmergencyDependency_node" pkg = "mira_pkg_handler" type = "runEmergencyDependency" output = "screen"/>
+</launch>
