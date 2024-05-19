@@ -7,7 +7,6 @@
 #include "ros/ros.h"
 #include "std_msgs/Bool.h"
 
-// Behavior Tree Node Types
 class BehaviorTreeNode {
 public:
     virtual ~BehaviorTreeNode() {}
@@ -53,11 +52,9 @@ public:
     }
 };
 
-// Global variables for ROS callbacks
 bool aruco_detected = false;
 bool emergency = false;
 
-// ROS callback functions
 void arucoCallback(const std_msgs::Bool::ConstPtr& msg) {
     aruco_detected = msg->data;
 }
@@ -66,159 +63,98 @@ void emergencyCallback(const std_msgs::Bool::ConstPtr& msg) {
     emergency = msg->data;
 }
 
-// Global variable for child PIDs
-std::vector<pid_t> child_pids;
-
-// Function to kill all child processes
-void killChildren() {
-    for (pid_t pid : child_pids) {
-        kill(pid, SIGKILL);
-        std::cout << "Child process: " << pid << " killed" << std::endl;
+void killChildren(const std::map<std::string, BehaviorTreeNode*>& launchNodeMap) {
+    for (const auto& pair : launchNodeMap) {
+        pair.second->terminate();
     }
 }
 
-// Signal handler function
 void handleSignal(int signal) {
     if (signal == SIGINT) {
         std::cout << "Exit code, killing all child processes" << std::endl;
-        killChildren();
-        std::cout << "Parent process exiting..." << std::endl;
+        ros::shutdown();
         exit(0);
     }
 }
 
-// Main function
 int main(int argc, char **argv) {
-    // Initialize ROS
     ros::init(argc, argv, "behavior_tree_control");
     ros::NodeHandle nh;
 
-    // ROS Subscribers
+    ros::Subscriber sub1 = nh.subscribe("aruco_topic", 10, arucoCallback);
     ros::Subscriber sub2 = nh.subscribe("emergency_topic", 10, emergencyCallback);
 
-    // Create the behavior tree nodes
-    ActionNode* runEmergencyDependency = new ActionNode("runEmergencyDependency", "mira_pkg_handler", "runEmergencyDependency.launch");
+    ActionNode runEmergencyDependency("runEmergencyDependency", "mira_pkg_handler", "runEmergencyDependency.launch");
+    ActionNode runPerception("runPerception", "mira_perception", "perception.launch");
+    ActionNode runDocking("runDocking", "mira_docking", "dock.launch");
+    ActionNode runTeleop("runTeleop", "mira_rov", "teleop.launch");
+    ActionNode runController("runController", "mira_controller", "controller.launch");
 
-    std::map<std::string, BehaviorTreeNode*> launchNodeMap;
+    std::map<std::string, BehaviorTreeNode*> launchNodeMap = {
+        {"runEmergencyDependency", &runEmergencyDependency},
+        {"runPerception", &runPerception},
+        {"runDocking", &runDocking},
+        {"runTeleop", &runTeleop},
+        {"runController", &runController}
+    };
 
-    // Store launch nodes in a map
-    launchNodeMap["runEmergencyDependency"] = runEmergencyDependency;
-    runEmergencyDependency->execute(); 
+    runEmergencyDependency.execute(); 
+    runPerception.execute();
+    runDocking.execute();
+    runTeleop.execute();
+    runController.execute();
 
-    // std::thread execution_thread([&]() {
-    //     //while (ros::ok()) {
-    //         if (emergency) {
-    //             disarm->execute();
-    //             runEmergencyDependency->terminate();
-    //         } else if (aruco_detected) {
-    //             runEmergencyDependency->execute();
-    //             runDocking->execute();
-    //             runController->execute();
-    //         } //else {
-    //             //disarm->execute();
-    //             //rov->execute();
-    //             //break;
-    //         //}
-    //         // Sleep for a while to prevent high CPU usage
-    //         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    //     //}
-    // });
+    signal(SIGINT, handleSignal);
 
-//     // Input handling thread
-//     std::thread input_thread([&]() {
-//     int input = 0;
-//     while (ros::ok()) {
-//         std::cout << "Enter command (1-4 to terminate specific node, 0 to terminate runEmergencyDependency, -1 to terminate all and exit): ";
-//         std::cin >> input;
-//         switch (input) {
-//             case 1: {
-//                 auto it = launchNodeMap.find("rov");
-//                 if (it != launchNodeMap.end()) {
-//                     BehaviorTreeNode* node = it->second;
-//                     if (node->getPID() != -1) {
-//                         std::cout << "Terminating rov node with PID: " << node->getPID() << std::endl;
-//                         node->terminate();
-//                     }
-//                 }
-//                 break;
-//             }
-//             case 2: {
-//                 auto it = launchNodeMap.find("runDocking");
-//                 if (it != launchNodeMap.end()) {
-//                     BehaviorTreeNode* node = it->second;
-//                     if (node->getPID() != -1) {
-//                         std::cout << "Terminating runDocking node with PID: " << node->getPID() << std::endl;
-//                         node->terminate();
-//                     }
-//                 }
-//                 break;
-//             }
-//             case 3: {
-//                 auto it = launchNodeMap.find("runController");
-//                 if (it != launchNodeMap.end()) {
-//                     BehaviorTreeNode* node = it->second;
-//                     if (node->getPID() != -1) {
-//                         std::cout << "Terminating runController node with PID: " << node->getPID() << std::endl;
-//                         node->terminate();
-//                     }
-//                 }
-//                 break;
-//             }
-//             case 4: {
-//                 auto it = launchNodeMap.find("disarm");
-//                 if (it != launchNodeMap.end()) {
-//                     BehaviorTreeNode* node = it->second;
-//                     if (node->getPID() != -1) {
-//                         std::cout << "Terminating disarm node with PID: " << node->getPID() << std::endl;
-//                         node->terminate();
-//                     }
-//                 }
-//                 break;
-//             }
-//             case 0: {
-//                 auto it = launchNodeMap.find("runEmergencyDependency");
-//                 if (it != launchNodeMap.end()) {
-//                     BehaviorTreeNode* node = it->second;
-//                     if (node->getPID() != -1) {
-//                         std::cout << "Terminating runEmergencyDependency node with PID: " << node->getPID() << std::endl;
-//                         node->terminate();
-//                     }
-//                 }
-//                 break;
-//             }
-//             case -1: { // Terminate all and exit
-//                 for (auto& entry : launchNodeMap) {
-//                     entry.second->terminate();
-//                 }
-//                 ros::shutdown();
-//                 return;
-//             }
-//             default: 
-//                 std::cout << "Invalid command!" << std::endl;
-//                 break;
-//         }
-//     }
-// });
+    while (ros::ok()) {
+        int input = 0;
+        std::cout << "Enter command (1-5 to terminate specific node, 0 to terminate runEmergencyDependency, -1 to terminate all and exit): ";
+        std::cin >> input;
+        switch (input) {
+            case 1: {
+                if (runPerception.getPID() != -1) {
+                    std::cout << "Terminating runPerception node with PID: " << runPerception.getPID() << std::endl;
+                    runPerception.terminate();
+                }
+                break;
+            }
+            case 2: {
+                if (runDocking.getPID() != -1) {
+                    std::cout << "Terminating runDocking node with PID: " << runDocking.getPID() << std::endl;
+                    runDocking.terminate();
+                }
+                break;
+            }
+            case 3: {
+                if (runTeleop.getPID() != -1) {
+                    std::cout << "Terminating runTeleop node with PID: " << runTeleop.getPID() << std::endl;
+                    runTeleop.terminate();
+                }
+                break;
+            }
+            case 4: {
+                if (runController.getPID() != -1) {
+                    std::cout << "Terminating runController node with PID: " << runController.getPID() << std::endl;
+                    runController.terminate();
+                }
+                break;
+            }
+            case 0: {
+                if (runEmergencyDependency.getPID() != -1) {
+                    std::cout << "Terminating runEmergencyDependency node with PID: " << runEmergencyDependency.getPID() << std::endl;
+                    runEmergencyDependency.terminate();
+                }
+                break;
+            }
+            case -1: { // Terminate all and exit
+                killChildren(launchNodeMap);
+                return 0;
+            }
+            default: 
+                std::cout << "Invalid command!" << std::endl;
+                break;
+        }
+    }
 
-
-    // // Signal handling
-    // signal(SIGINT, handleSignal);
-
-    // // Spin until ROS is shutdown
-    // ros::spin();
-
-    // // Cleanup
-    // execution_thread.join();
-    // input_thread.join();
-
-    // //delete runPyMavlink;
-    // //delete runImagePipeline;
-    // delete runEmergencyDependency;
     return 0;
 }
-
-
-
-
-
-
