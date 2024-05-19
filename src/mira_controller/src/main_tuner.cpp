@@ -103,19 +103,19 @@ int main(int argc, char **argv) {
                 subs.forward_error      = *min_element_iter;
             }
         }
-        if (!lateral.error_vector.empty()) {
-            auto it                     = lateral.error_vector.end();
-            if (*it - subs.lateral_error > threshold) {
-                int num_elements        = std::min(static_cast<int>(lateral.error_vector.size()), 10);
-                auto max_element_iter   = std::max_element(lateral.error_vector.end() - num_elements, lateral.error_vector.end());
-                subs.lateral_error      = *max_element_iter;
-            }
-            else if (*it - subs.lateral_error < -1*threshold) {
-                int num_elements        = std::min(static_cast<int>(lateral.error_vector.size()), 10);
-                auto min_element_iter   = std::min_element(lateral.error_vector.end() - num_elements, lateral.error_vector.end());
-                subs.lateral_error      = *min_element_iter;
-            }
-        }
+        // if (!lateral.error_vector.empty()) {
+        //     auto it                     = lateral.error_vector.end();
+        //     if (*it - subs.lateral_error > threshold) {
+        //         int num_elements        = std::min(static_cast<int>(lateral.error_vector.size()), 10);
+        //         auto max_element_iter   = std::max_element(lateral.error_vector.end() - num_elements, lateral.error_vector.end());
+        //         subs.lateral_error      = *max_element_iter;
+        //     }
+        //     else if (*it - subs.lateral_error < -1*threshold) {
+        //         int num_elements        = std::min(static_cast<int>(lateral.error_vector.size()), 10);
+        //         auto min_element_iter   = std::min_element(lateral.error_vector.end() - num_elements, lateral.error_vector.end());
+        //         subs.lateral_error      = *min_element_iter;
+        //     }
+        // }
         float pid_depth;
         if (!cmd_pwm.arm) {
             prev_time = ros::Time::now().toSec();
