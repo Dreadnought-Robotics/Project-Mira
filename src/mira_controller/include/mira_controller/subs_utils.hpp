@@ -28,6 +28,12 @@ class Subscriber {
         ros::Subscriber             telemetry_sub;
         bool switchServiceCallback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
             autonomy_switch = !autonomy_switch;
+            if (autonomy_switch==true) {
+                ROS_INFO("AUTONOMOUS MODE");
+            }
+            else {
+                ROS_INFO("ROV MODE");
+            }
             return true;
         }
         void dockCallback(const geometry_msgs::Quaternion::ConstPtr& msg) {
