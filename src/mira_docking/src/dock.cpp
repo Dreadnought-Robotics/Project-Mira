@@ -108,6 +108,7 @@ class Docking24 {
                 buffer_Y = 100;
             }
             if (msg->data[marked_index*no_of_arucos] == marked_aruco && center_called==false) {
+                ROS_INFO("Marked Aruco: %d, X: %f, Y: %f", marked_aruco, -1*msg->data[marked_index*no_of_arucos + 2] + 240, -1*msg->data[marked_index*no_of_arucos + 3] + 320);
                 forward_error = buffer_X+(-1*msg->data[marked_index*no_of_arucos + 2] + 240);
                 lateral_error = buffer_Y+(-1*msg->data[marked_index*no_of_arucos + 3] + 320);
                 if (yaw_locked==false) {
@@ -165,10 +166,12 @@ class Docking24 {
                     depth_error = 1025 - depth_reading;
                 }
                 else {
-                    if(depth_reading<1050){
+                    if(depth_reading<1050) {
                         depth_error = 1050 - depth_reading;
-                    }else {
+                    } else if(depth_reading>1075){
                         depth_error = 1110 - depth_reading;
+                    } else{
+                        depth_error = 1075 - depth_reading;
                     }
                 }
                 geometry_msgs::Quaternion q;

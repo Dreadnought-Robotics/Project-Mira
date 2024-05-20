@@ -153,7 +153,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
         std::vector<float> aruco;
         for(int i=0; i<marker_IDs.size(); i++) {
             for (int j=0; j<aruco_class_vector.size(); j++) {
-                aruco_class_vector[i].frame = frame;
+                aruco_class_vector[j].frame = frame;
                 if (aruco_class_vector[j].id==marker_IDs[i]) {
                     aruco_class_vector[j].marker_corners         = marker_corners[i];
                     aruco_class_vector[j].tVec                   = tVec[i];
@@ -164,7 +164,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
                     f.data.push_back(aruco_class_vector[j].pitch);
                     f.data.push_back(aruco_class_vector[j].yaw);
                     for (int k=0; k<3; k++) {
-                        f.data.push_back(aruco_class_vector[k].world_coordinates[k]);
+                        f.data.push_back(aruco_class_vector[j].world_coordinates[k]);
                     }
                     p.data.push_back(marker_IDs[i]);
                     p.data.push_back(aruco_class_vector[j].yaw);
@@ -184,56 +184,63 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
         waypoint_publisher.publish(f);
         pixel_publisher.publish(p);
     }
-    cv::medianBlur(gray_frame, gray_frame, 5);
-    cv::Scalar lower_rgb;
-    cv::Scalar upper_rgb;
-    if (depth<1060) {
-        lower_rgb={60, 100, 90};
-        upper_rgb={110, 150, 130};
-        // lower_rgb={125, 170, 145};
-        // upper_rgb={160, 190, 170};
-        // std::cout << depth << std::endl;
-    }
-    else if (depth >1110) {
-        lower_rgb={60, 60, 60};
-        upper_rgb={100, 100, 100};  
-    }
-    else {
-        // lower_rgb={55, 100, 90};
-        // upper_rgb={100, 150, 130}; 
-        lower_rgb={120, 130, 160};
-        upper_rgb={160, 180, 190};  
-    }
-    cv::Mat img_rgb;
-    cv::cvtColor(frame, img_rgb, cv::COLOR_BGR2RGB);
-    cv::Mat mask;
-    cv::inRange(img_rgb, lower_rgb, upper_rgb, mask);
-    std::vector<std::vector<cv::Point>> contours;
-    std::vector<cv::Vec4i> hierarchy;
-    cv::findContours(mask, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-    int cx, cy;
-    int cy_min = 999, cx_min = 999;
-    for (size_t i = 0; i < contours.size(); i++) {
-        if (contourArea(contours[i]) > 200) {
-            cv::Moments M = moments(contours[i]);
-            if (M.m00 != 0) {
-                cx = static_cast<int>(M.m10 / M.m00);
-                cy = static_cast<int>(M.m01 / M.m00);
-                if (cy<cy_min) {
-                    cy_min = cy;
-                    cx_min = cx;
-                }
-                drawContours(frame, contours, static_cast<int>(i), cv::Scalar(0, 255, 0), 2);
-            }
-        }
-    }
-    cv::circle(frame, cv::Point(cx_min, cy_min), 7, cv::Scalar(0, 0, 255), -1);
-    if (cx_min <640 && cy_min < 640){
-        geometry_msgs::Vector3 k;
-        k.x = cx_min;
-        k.y = cy_min;
-        docking_center_publisher.publish(k);
-    }
+    // cv::medianBlur(gray_frame, gray_frame, 5);
+    // cv::Scalar lower_rgb;
+    // cv::Scalar upper_rgb;
+    // if (depth<1060) {
+    //     lower_rgb={60, 100, 90};
+    //     upper_rgb={110, 150, 130};
+    //     // lower_rgb={125, 170, 145};
+    //     // upper_rgb={160, 190, 170};
+    //     // std::cout << depth << std::endl;
+    // }
+    // else if (depth >1110) {
+    //     lower_rgb={60, 60, 60};
+    //     upper_rgb={100, 100, 100};  
+    // }
+    // else {
+    //     // lower_rgb={55, 100, 90};
+    //     // upper_rgb={100, 150, 130}; 
+    //     lower_rgb={120, 130, 160};
+    //     upper_rgb={160, 180, 190};  
+    // }
+    // cv::Mat img_rgb;
+    // cv::cvtColor(frame, img_rgb, cv::COLOR_BGR2RGB);
+    // cv::Mat mask;
+    // cv::inRange(img_rgb, lower_rgb, upper_rgb, mask);
+    // std::vector<std::vector<cv::Point>> contours;
+    // std::vector<cv::Vec4i> hierarchy;
+    // cv::findContours(mask, contours, hierarchy, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    // int cx, cy;
+    // int cy_min = 999, cx_min = 999;
+    // for (size_t i = 0; i < contours.size(); i++) {
+    //     if (contourArea(contours[i]) > 200) {
+    //         cv::Moments M = moments(contours[i]);
+    //         if (M.m00 != 0) {
+    //             cx = static_cast<int>(M.m10 / M.m00);
+    //             cy = static_cast<int>(M.m01 / M.m00);
+    //             if (cy<cy_min) {
+    //                 cy_min = cy;
+    //                 cx_min = cx;
+    //             }
+    //             drawContours(frame, contours, static_cast<int>(i), cv::Scalar(0, 255, 0), 2);
+    //         }
+    //     }
+    // }
+    // cv::circle(frame, cv::Point(cx_min, cy_min), 7, cv::Scalar(0, 0, 255), -1);
+    // if (cx_min <640 && cy_min < 640){
+    //     geometry_msgs::Vector3 k;
+    //     k.x = cx_min;
+    //     k.y = cy_min;
+    //     docking_center_publisher.publish(k);
+    // }
+    // int width = frame.cols;
+    // int height = frame.rows;
+    int center_x = width / 2;
+    int center_y = height / 2;
+    cv::line(frame, cv::Point(300, center_y), cv::Point(width - 300, center_y), cv::Scalar(0, 255, 0), 2);
+    cv::line(frame, cv::Point(center_x, 220), cv::Point(center_x, height - 220), cv::Scalar(0, 255, 0), 2);
+
     cv::resizeWindow("Camera Down View", 640, 480);
     cv::moveWindow("Camera Down View", 1280, 0);
     cv::imshow("Camera Down View", frame);
@@ -247,7 +254,7 @@ int main(int argc, char** argv) {
     ros::Subscriber image_subscriber    = nh.subscribe("/camera_down/image_raw/compressed", 1, imageCallback);
     ros::Subscriber depth_subscriber    = nh.subscribe("/master/telemetry", 1, depthCallback);
     waypoint_publisher                  = nh.advertise<std_msgs::Float32MultiArray>("/aruco/waypoints", 1);
-    docking_center_publisher            = nh.advertise<geometry_msgs::Vector3>("/docking/center", 1);
+    // docking_center_publisher            = nh.advertise<geometry_msgs::Vector3>("/docking/center", 1);
     pixel_publisher                     = nh.advertise<std_msgs::Float32MultiArray>("/aruco/pixels", 1);
     ros::spin();
 }
