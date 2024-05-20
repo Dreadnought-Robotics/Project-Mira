@@ -108,7 +108,7 @@ class Docking24 {
                 buffer_Y = 100;
             }
             if (msg->data[marked_index*no_of_arucos] == marked_aruco && center_called==false) {
-                ROS_INFO("Marked Aruco: %d, X: %f, Y: %f", marked_aruco, -1*msg->data[marked_index*no_of_arucos + 2] + 240, -1*msg->data[marked_index*no_of_arucos + 3] + 320);
+                // ROS_INFO("Marked Aruco: %d, X: %f, Y: %f", marked_aruco, -1*msg->data[marked_index*no_of_arucos + 2] + 240, -1*msg->data[marked_index*no_of_arucos + 3] + 320);
                 forward_error = buffer_X+(-1*msg->data[marked_index*no_of_arucos + 2] + 240);
                 lateral_error = buffer_Y+(-1*msg->data[marked_index*no_of_arucos + 3] + 320);
                 if (yaw_locked==false) {
@@ -166,12 +166,20 @@ class Docking24 {
                     depth_error = 1025 - depth_reading;
                 }
                 else {
-                    if(depth_reading<1050) {
-                        depth_error = 1050 - depth_reading;
-                    } else if(depth_reading>1075){
+                    if(depth_reading<1040) {
+                        depth_error = 1040 - depth_reading;
+                    } else if(depth_reading>1055 && depth_reading<1070){
+                        depth_error = 1070 - depth_reading;
+                    } else if(depth_reading>1040 && depth_reading<1055){
+                        depth_error = 1055 - depth_reading;
+                    }else if(depth_reading>1070 && depth_reading<1085){
+                        depth_error = 1085 - depth_reading;
+                    }
+                    else if(depth_reading>1085 && depth_reading<1100){
+                        depth_error = 1100 - depth_reading;
+                    }
+                    else {
                         depth_error = 1110 - depth_reading;
-                    } else{
-                        depth_error = 1075 - depth_reading;
                     }
                 }
                 geometry_msgs::Quaternion q;
@@ -191,9 +199,9 @@ class Docking24 {
                 center_called   = false;
                 yaw_locked      = false;
                 depth_called    = false;
-                ROS_INFO("Depth Lock is Disabled");
-                ROS_INFO("Center Lock is Disabled");
-                ROS_INFO("Yaw Lock is Disabled");
+                // ROS_INFO("Depth Lock is Disabled");
+                // ROS_INFO("Center Lock is Disabled");
+                // ROS_INFO("Yaw Lock is Disabled");
             }
             geometry_msgs::Quaternion p;
             if (yaw_locked==false){

@@ -17,7 +17,7 @@ class Subscriber {
             error_sub               = nh.subscribe("/docking/errors", 1, &Subscriber::dockCallback, this);
             status_sub              = nh.subscribe("/docking/status", 1, &Subscriber::statusCallback, this);
             telemetry_sub           = nh.subscribe("/master/telemetry", 1, &Subscriber::telemetryCallback, this);
-            rov_sub                 = nh.subscribe("/rov/commands", 1, &Subscriber::rovCallback, this);
+            // rov_sub                 = nh.subscribe("/rov/commands", 1, &Subscriber::rovCallback, this);
             rov_auv                 = nh.advertiseService("/mira/switch", &Subscriber::switchServiceCallback, this);
         }
     private:
@@ -50,9 +50,9 @@ class Subscriber {
         void telemetryCallback(const custom_msgs::telemetry::ConstPtr& msg) {
             depth_external          = msg->external_pressure;
         }
-        void rovCallback(const custom_msgs::commands msg) {
-            rov_commands            = msg;
-        }
+        // void rovCallback(const custom_msgs::commands msg) {
+        //     rov_commands            = msg;
+        // }
         float euler_from_quaternion(double x, double y, double z, double w) {
             float yaw;
             double siny_cosp = +2.0 * (w * z + x * y);
