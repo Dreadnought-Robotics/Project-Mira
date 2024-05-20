@@ -15,13 +15,13 @@ class controller{
         int arm_disarm;
         custom_msgs::commands msg_to_pub;
         bool yaw_locked=false, autonomy_switch=false;
-        ros::ServiceClient yaw_lock;
+        ros::ServiceClient autonomy;
         float yaw_err, heading_mark, heading_reading;
         controller(ros::NodeHandle nh){ 
             joy_sub = nh.subscribe<sensor_msgs::Joy>("/joy", 1, &controller::joyCallback, this);
             heading_sub = nh.subscribe<std_msgs::Float32>("/mira/heading", 1, &controller::headingCallback, this);
             base_pwm_pub = nh.advertise<custom_msgs::commands>("/rov/commands",1);
-            yaw_lock                = nh.serviceClient<std_srvs::Empty>("/yaw/lock");
+            autonomy                = nh.serviceClient<std_srvs::Empty>("/mira/switch");
             msg_to_pub.arm=0;
             msg_to_pub.mode="STABILIZE";    
             msg_to_pub.forward=1500;
@@ -65,8 +65,8 @@ class controller{
             msg_to_pub.lateral=1500+((msg->axes[3])*-400);
             
             if (yaw_hold_button==1) {
-                std_srvs::Empty srv;
-                yaw_lock.call(srv);
+                // std_srvs::Empty srv;
+                // yaw_lock.call(srv);
                 yaw_locked = !yaw_locked;
                 if (yaw_locked==true){
                     heading_mark = heading_reading;
@@ -75,6 +75,7 @@ class controller{
             }
             
             if(arm_disarm==1 && prev_msg==0){
+
                 if(msg_to_pub.arm==0){
                     msg_to_pub.arm=1;
                     ROS_WARN("VEHICLE ARMED");
@@ -89,8 +90,15 @@ class controller{
                 std::string typo;
                 std::cin >> typo;
                 if (typo=="CONFIRM") {
+                    std_srvs::Empty s;
+                    autonomy.call(s);
                     autonomy_switch=!autonomy_switch;
-                    
+                    if (autonomy_switch==true) {
+                        ROS_INFO("AUTONOMOUS MODE");
+                    }
+                    else {
+                        ROS_INFO("ROV MODE");
+                    }
                 }
             }
             if(mode_stabilise==1 && msg_to_pub.mode!="STABILIZE"){
