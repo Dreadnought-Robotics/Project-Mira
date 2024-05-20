@@ -111,7 +111,7 @@ class Docking24 {
                 // ROS_INFO("Marked Aruco: %d, X: %f, Y: %f", marked_aruco, -1*msg->data[marked_index*no_of_arucos + 2] + 240, -1*msg->data[marked_index*no_of_arucos + 3] + 320);
                 forward_error = buffer_X+(-1*msg->data[marked_index*no_of_arucos + 2] + 240);
                 lateral_error = buffer_Y+(-1*msg->data[marked_index*no_of_arucos + 3] + 320);
-                if (yaw_locked==false) {
+                if (yaw_locked==false && armed==true) {
                     heading_error = msg->data[marked_index*no_of_arucos + 1]; 
                     if (sqrt(heading_error*heading_error)<=theta_threshold) {
                         yaw_locked = true;

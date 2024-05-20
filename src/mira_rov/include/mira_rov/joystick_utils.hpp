@@ -10,7 +10,7 @@ class controller{
         Control                             yaw;
         ros::Time init_time                 = ros::Time::now();
         ros::Subscriber joy_sub, heading_sub;
-        ros::Publisher base_pwm_pub;
+        ros::Publisher base_pwm_pub, base_pwm_pub_master;
         int prev_msg;
         int arm_disarm;
         custom_msgs::commands msg_to_pub;
@@ -21,6 +21,7 @@ class controller{
             joy_sub = nh.subscribe<sensor_msgs::Joy>("/joy", 1, &controller::joyCallback, this);
             heading_sub = nh.subscribe<std_msgs::Float32>("/mira/heading", 1, &controller::headingCallback, this);
             base_pwm_pub = nh.advertise<custom_msgs::commands>("/rov/commands",1);
+            base_pwm_pub_master = nh.advertise<custom_msgs::commands>("/master/commands",1);
             autonomy                = nh.serviceClient<std_srvs::Empty>("/mira/switch");
             msg_to_pub.arm=0;
             msg_to_pub.mode="STABILIZE";    
@@ -117,6 +118,11 @@ class controller{
                 msg_to_pub.mode="ALT_HOLD";
                 ROS_INFO("Mode changed to ALT_HOLD ");
             }
-            base_pwm_pub.publish(msg_to_pub);     
+            if (autonomy_switch==false){
+                base_pwm_pub_master.publish(msg_to_pub);
+            }
+            else {
+                base_pwm_pub.publish(msg_to_pub);     
+            }
         }
 };

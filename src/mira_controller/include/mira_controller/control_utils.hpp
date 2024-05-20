@@ -92,7 +92,7 @@ class Control {
                 error_vector.pop_back();
                 time.pop_back();
             }
-            std::cout << "Error stack: " << error_vector.size() << std::endl;
+            // std::cout << "Error stack: " << error_vector.size() << std::endl;
         }
     private:
     std::vector<float> time;

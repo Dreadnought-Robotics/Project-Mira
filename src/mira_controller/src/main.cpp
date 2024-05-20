@@ -119,8 +119,8 @@ int main(int argc, char **argv) {
     ros::Time init_time                 = ros::Time::now();
     cmd_pwm.arm                         = false;
     while (ros::ok()) {
-        // if (subs.autonomy_switch==true){
-        //     cmd_pwm.arm                     = subs.rov_commands.arm;
+        if (subs.autonomy_switch==true && subs.rov_commands.arm==true){
+            cmd_pwm.arm                     = subs.rov_commands.arm;
             cmd_pwm.mode                    = "STABILIZE";
             ros::Time time_now              = ros::Time::now();
             if (cmd_pwm.arm==true) {
@@ -145,10 +145,14 @@ int main(int argc, char **argv) {
                 std_msgs::Float32MultiArray v;
             }
             pwm_publisher.publish(cmd_pwm);
-        // }
-        // else {
-        //     pwm_publisher.publish(subs.rov_commands);
-        // }
+        }
+        else {
+            forward.emptyError();
+            yaw.emptyError();
+            depth.emptyError();
+            lateral.emptyError();
+            // pwm_publisher.publish(subs.rov_commands);
+        }
         
         ros::spinOnce();
     }
