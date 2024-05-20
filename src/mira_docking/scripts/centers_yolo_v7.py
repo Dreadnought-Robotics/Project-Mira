@@ -16,7 +16,7 @@ class YoloV7RosNode:
 
         # Load YOLOv7 model
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = attempt_load('/home/sumukh/Project-Mira/src/mira_docking/scripts/best.pt', map_location=self.device)
+        self.model = attempt_load('best.pt', map_location=self.device)
         self.model.to(self.device).eval()
         self.centre_pub = rospy.Publisher('/docking/center', Vector3, queue_size=1)
         # Subscriber to the compressed image topic
