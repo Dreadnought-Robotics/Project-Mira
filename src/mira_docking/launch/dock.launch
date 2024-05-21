@@ -1,4 +1,6 @@
 <launch>
   <node name="dock" pkg="mira_docking" type="dock" output="screen">
   </node>
+  <node name="yolov7_ros_node" pkg="mira_docking" type="centers_yolo_v7.py" output="screen">
+  </node>
 </launch>

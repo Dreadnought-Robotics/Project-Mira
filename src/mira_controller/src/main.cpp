@@ -1,7 +1,6 @@
 #include <ros/ros.h>
 #include <mira_controller/subs_utils.hpp>
 #include <mira_controller/control_utils.hpp>
-#include <custom_msgs/commands.h>
 #include <std_msgs/Char.h>
 #include <std_msgs/Float32MultiArray.h>
 
@@ -20,6 +19,9 @@
     depth.kp                            = 1.35;
     depth.ki                            = 0.266;
     depth.kd                            = 0.335;
+    // yaw.kp                              = 0.4;
+    // yaw.ki                              = 0.02;
+    // yaw.kd                              = 3.7;
 */
 
 
@@ -94,89 +96,13 @@ void keys_callback(const std_msgs::Char::ConstPtr& msg) {
         forward_bool = !forward_bool;
     }
 }
-// bool tuning_mode = false;
-// char tuning_axis = '\0';
-// void keys_callback(const std_msgs::Char::ConstPtr& msg) {
-    
-// char key = msg->data;
-//     if (key == 'a') {
-//         cmd_pwm.arm = true;
-//         std::cout<<"Mira Armed"<<std::endl;
-//     } 
-//     else if (key == 'z') {
-//         cmd_pwm.arm = false;
-//         depth.emptyError();
-//         std::cout<<"Mira Disarmed"<<std::endl;
-//     }
-//     else if (key == 'q') {
-//         tuning_mode = false;
-//         tuning_axis = '\0';
-//         std::cout<<"--------PID values for each axis--------"<<std::endl;
-//         std::cout<<"Depth PID: "<<depth.kp<<","<<depth.ki<<","<<depth.kd<<std::endl;
-//         std::cout<<"Forward PID: "<<forward.kp<<","<<forward.ki<<","<<forward.kd<<std::endl;
-//         std::cout<<"Lateral PID: "<<lateral.kp<<","<<lateral.ki<<","<<lateral.kd<<std::endl;
-//         std::cout<<"Yaw PID: "<<yaw.kp<<","<<yaw.ki<<","<<yaw.kd<<std::endl;        
-//     } 
-//     else if (key == 'd') {
-//         tuning_mode = true;
-//         tuning_axis = 'd';
-//         std::cout<<"Tuning depth PID"<<std::endl;
-//     } 
-//     else if (key == 'y') {
-//         tuning_mode = true;
-//         tuning_axis = 'y';
-//         std::cout<<"Tuning yaw PID"<<std::endl;
-//     } 
-//     else if (key == 'f') {
-//         tuning_mode = true;
-//         tuning_axis = 'f';
-//         std::cout<<"Tuning forward PID"<<std::endl;
-//     }
-//     else if (key == 'l') {
-//         tuning_mode = true;
-//         tuning_axis = 'l';
-//         std::cout<<"Tuning lateral PID"<<std::endl;
-//     } 
-//     else if (tuning_mode) {
-//         float val = std::atof(&key);
-//         switch (tuning_axis) {
-//             case 'd':
-//                 if (key == '1') depth.kp += val;
-//                 else if (key == '2') depth.ki += val;
-//                 else if (key == '3') depth.kd += val;
-//                 std::cout<<"Current depth PID values: "<<depth.kp<<" "<<depth.ki<<" "<<depth.kd<<std::endl;
-//                 break;
-//             case 'y':
-//                 if (key == '1') yaw.kp += val;
-//                 else if (key == '2') yaw.ki += val;
-//                 else if (key == '3') yaw.kd += val;
-//                 std::cout<<"Current yaw PID values: "<<yaw.kp<<" "<<yaw.ki<<" "<<yaw.kd<<std::endl;
-//                 break;
-//             case 'f':
-//                 if (key == '1') forward.kp += val;
-//                 else if (key == '2') forward.ki += val;
-//                 else if (key == '3') forward.kd += val;
-//                 std::cout<<"Current forward PID values: "<<forward.kp<<" "<<forward.ki<<" "<<forward.kd<<std::endl;
-//                 break;
-//             case 'l':
-//                 if (key == '1') lateral.kp += val;
-//                 else if (key == '2') lateral.ki += val;
-//                 else if (key == '3') lateral.kd += val;
-//                 std::cout<<"Current lateral PID values: "<<lateral.kp<<" "<<lateral.ki<<" "<<lateral.kd<<std::endl;
-//                 break;
-//         }
-//     } 
-// }
+
 int main(int argc, char **argv) {
     ros::init(argc, argv, "auv_controller");
     ros::NodeHandle                     nh;
     ros::Publisher pwm_publisher        = nh.advertise<custom_msgs::commands>("/master/commands", 1);
     ros::Subscriber keys_subscriber     = nh.subscribe("keys", 1, keys_callback);
-
     Subscriber                          subs(nh);
-    // yaw.kp                              = 0.4;
-    // yaw.ki                              = 0.02;
-    // yaw.kd                              = 3.7;
     yaw.kp                              = 0.35;
     yaw.ki                              = 0.027;
     yaw.kd                              = 5.0;
@@ -193,61 +119,41 @@ int main(int argc, char **argv) {
     ros::Time init_time                 = ros::Time::now();
     cmd_pwm.arm                         = false;
     while (ros::ok()) {
-        cmd_pwm.mode                    = "STABILIZE";
-        // std::cout << "Error: " << subs.depth_error << std::endl;
-        ros::Time time_now              = ros::Time::now();
-        if (cmd_pwm.arm==true) {
-            float pid_forward               = forward.pid_control(subs.forward_error,(time_now-init_time).toSec(), true);
-            float pid_lateral               = lateral.pid_control(subs.lateral_error,(time_now-init_time).toSec(), false);
-            float pid_depth                 = depth.pid_control(subs.depth_error,(time_now-init_time).toSec(), false);
-            float pid_yaw                   = 0;
-            if (subs.service_called==true) {
-                pid_yaw                   = yaw.pid_control(subs.yaw_error,(time_now-init_time).toSec(), false);
-            }
-            else {
-                pid_yaw                   = yaw.pid_control(subs.yaw_error,(time_now-init_time).toSec(), true);
-            }
-            // if (subs.service_called==true) {
-            //     yaw.kp = 0.2;
-            //     yaw.ki = 0;
-            //     yaw.kd = 0;
-            // }
-            // std::cout << "yaw error: " << subs.yaw_error << std::endl;
-            if (sqrt(pow(subs.forward_error,2))>threshold) {
-                // if (forward_bool) {
-                    // cmd_pwm.forward         = pid_forward;
-                    // cmd_pwm.lateral         = pid_lateral;
-                // }
-                // else {
-                    cmd_pwm.forward         = pid_forward;
-                    cmd_pwm.lateral         = pid_lateral;
-                // }
+        if (subs.autonomy_switch==true && subs.rov_commands.arm==true){
+            cmd_pwm.arm                     = subs.rov_commands.arm;
+            cmd_pwm.mode                    = "STABILIZE";
+            ros::Time time_now              = ros::Time::now();
+            if (cmd_pwm.arm==true) {
+                float pid_forward           = forward.pid_control(subs.forward_error,(time_now-init_time).toSec(), true);
+                float pid_lateral           = lateral.pid_control(subs.lateral_error,(time_now-init_time).toSec(), false);
+                float pid_depth             = depth.pid_control(subs.depth_error,(time_now-init_time).toSec(), false);
+                float pid_yaw               = 0;
+                if (subs.yaw_locked==true) {
+                    pid_yaw                 = yaw.pid_control(subs.yaw_error,(time_now-init_time).toSec(), false);
+                }
+                else {
+                    pid_yaw                 = yaw.pid_control(subs.yaw_error,(time_now-init_time).toSec(), true);
+                }
+                cmd_pwm.forward             = pid_forward;
+                cmd_pwm.lateral             = pid_lateral;
                 cmd_pwm.thrust              = pid_depth;
                 cmd_pwm.yaw                 = pid_yaw;
+                if (subs.depth_external>1100) {
+                    cmd_pwm.forward         = 1500;
+                    cmd_pwm.lateral         = 1500;
+                }
+                std_msgs::Float32MultiArray v;
             }
-            else {
-            //     if (forward_bool) {
-                    // cmd_pwm.forward         = pid_forward;
-                    // cmd_pwm.lateral         = pid_lateral;
-            //     }
-            //     else {
-                    cmd_pwm.forward         = pid_forward;
-                    cmd_pwm.lateral         = pid_lateral;
-            //     }
-                cmd_pwm.thrust              = pid_depth;
-                cmd_pwm.yaw                 = pid_yaw;
-            }
-            // if (subs.depth_service_called==true) {
-            //     cmd_pwm.thrust = 1450;
-            // }
-                // cmd_pwm.yaw                 = 1500;
-                // cmd_pwm.thrust                 = 1500;
-                // cmd_pwm.forward                 = 1500;
-                // cmd_pwm.lateral                 = 1500;
-            // std::cout << "yaw command: " << cmd_pwm.yaw << std::endl;
-            std_msgs::Float32MultiArray v;
+            pwm_publisher.publish(cmd_pwm);
         }
-        pwm_publisher.publish(cmd_pwm);
+        else {
+            forward.emptyError();
+            yaw.emptyError();
+            depth.emptyError();
+            lateral.emptyError();
+            // pwm_publisher.publish(subs.rov_commands);
+        }
+        
         ros::spinOnce();
     }
 }
