@@ -7,13 +7,16 @@ project(mira_rov)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+# find_package( REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
   custom_msgs
   roscpp
   rospy
   sensor_msgs
+  mira_controller
 )
 
+# find_package(mira_controller REQUIRED)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -106,19 +109,20 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES mira_rov
-#  CATKIN_DEPENDS custom_msgs roscpp rospy sensor_msgs
+#  CATKIN_DEPENDS mira_controller custom_msgs roscpp rospy sensor_msgs
 #  DEPENDS system_lib
 )
 
 ###########
 ## Build ##
 ###########
-
+# include_directories(${mira_controller_INCLUDE_DIRS})
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${mira_controller_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -126,7 +130,7 @@ include_directories(
 #   src/${PROJECT_NAME}/mira_rov.cpp
 # )
 add_executable(joystick src/joystick_main.cpp)
-target_link_libraries(joystick  ${catkin_LIBRARIES})
+target_link_libraries(joystick  ${catkin_LIBRARIES} ${mira_controller_INCLUDE_DIRS})
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure

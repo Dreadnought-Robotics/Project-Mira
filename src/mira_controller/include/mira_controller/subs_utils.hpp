@@ -3,65 +3,71 @@
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Quaternion.h>
 #include <std_msgs/Float32MultiArray.h>
+#include <custom_msgs/commands.h>
+#include <std_msgs/Float32.h>
 #include "std_srvs/Empty.h"
-
+#define CV_PI   3.1415926535897932384626433832795
 
 class Subscriber {
     public:
-        bool                        service_called = false, depth_service_called = false;
-        double                      depth_error, yaw_error, forward_error, lateral_error, pid_depth, pid_yaw;
-        double                      angular_velocity_z, yaw_comp_reading, marked_yaw;
+        bool                        yaw_locked, center_called, depth_called, autonomy_switch=false;
+        double                      depth_error, yaw_error, forward_error, lateral_error, depth_external;
+        custom_msgs::commands       rov_commands;
         Subscriber(ros::NodeHandle nh) {
-            yaw_lock                = nh.advertiseService("/yaw/lock", &Subscriber::emptyYawServiceCallback, this);
-            depth_lock              = nh.advertiseService("/depth/lock", &Subscriber::emptyDepthServiceCallback, this);
-            telemetry_sub           = nh.subscribe("/master/telemetry", 1, &Subscriber::telemetryCallback, this);
             error_sub               = nh.subscribe("/docking/errors", 1, &Subscriber::dockCallback, this);
+            status_sub              = nh.subscribe("/docking/status", 1, &Subscriber::statusCallback, this);
+            telemetry_sub           = nh.subscribe("/master/telemetry", 1, &Subscriber::telemetryCallback, this);
+            // rov_sub                 = nh.subscribe("/rov/commands", 1, &Subscriber::rovCallback, this);
+            rov_auv                 = nh.advertiseService("/mira/switch", &Subscriber::switchServiceCallback, this);
         }
     private:
-        bool emptyYawServiceCallback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
-            service_called = !service_called;
-            if (service_called==true) {
-                marked_yaw = yaw_comp_reading;
-                ROS_INFO("Service set to true");
-            }
-            else {
-                ROS_INFO("Service set to false");
-                yaw_error = 0;
-            }
-            return true;
-        }
-        bool emptyDepthServiceCallback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
-            depth_service_called = !depth_service_called;
-            if (depth_service_called==true) {
-                // marked_yaw = yaw_comp_reading;
-                ROS_INFO("Service set to true");
-            }
-            else {
-                ROS_INFO("Service set to false");
-                // yaw_error = 0;
-            }
-            return true;
-        }
-        ros::ServiceServer          yaw_lock;
-        ros::ServiceServer          depth_lock;
-        ros::Subscriber             waypoints_sub;
-        ros::Subscriber             telemetry_sub;
+        ros::ServiceServer          rov_auv;
         ros::Subscriber             error_sub;
-        void telemetryCallback(const custom_msgs::telemetry::ConstPtr& msg) {
-            depth_error             = 1050 - msg->external_pressure;
-            yaw_comp_reading        = msg->heading;
-            if (service_called==true) {
-                // yaw_error               = marked_yaw - yaw_comp_reading;
-                yaw_error               = 90 - yaw_comp_reading;
+        ros::Subscriber             rov_sub;
+        ros::Subscriber             status_sub;
+        ros::Subscriber             telemetry_sub;
+        bool switchServiceCallback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
+            autonomy_switch = !autonomy_switch;
+            if (autonomy_switch==true) {
+                ROS_INFO("AUTONOMOUS MODE");
             }
+            else {
+                ROS_INFO("ROV MODE");
+            }
+            return true;
         }
         void dockCallback(const geometry_msgs::Quaternion::ConstPtr& msg) {
-            if (service_called==false) {
-                yaw_error               = msg->w;
-            }
+            yaw_error               = msg->w;
             forward_error           = msg->x;
             lateral_error           = msg->y;
+            depth_error             = msg->z;
+            // yaw_error               = 0;
+            // forward_error           = 0;
+            // lateral_error           = 0;
+            // depth_error             = 1050 - depth_external;
+            // std::cout << depth_error << std::endl;
         }
+        void statusCallback(const geometry_msgs::Vector3::ConstPtr& msg) {
+            yaw_locked              = msg->x;
+            center_called           = msg->y;
+            depth_called            = msg->z;
+        }
+        void telemetryCallback(const custom_msgs::telemetry::ConstPtr& msg) {
+            depth_external          = msg->external_pressure;
+            depth_error             = 1050 - depth_external;
+        }
+        // void rovCallback(const custom_msgs::commands msg) {
+        //     rov_commands            = msg;
+        // }
+        float euler_from_quaternion(double x, double y, double z, double w) {
+            float yaw;
+            double siny_cosp = +2.0 * (w * z + x * y);
+            double cosy_cosp = +1.0 - 2.0 * (y * y + z * z);
+            yaw = atan((-1*siny_cosp)/(-1*cosy_cosp));
+            yaw = yaw * 180 / CV_PI;
+            return yaw;
+        }
+
 };
 
 

@@ -104,9 +104,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
- INCLUDE_DIRS include
- LIBRARIES mira_controller
- CATKIN_DEPENDS custom_msgs cv_bridge roscpp rospy sensor_msgs
+#  INCLUDE_DIRS include
+#  LIBRARIES mira_controller
+#  CATKIN_DEPENDS custom_msgs cv_bridge roscpp rospy sensor_msgs
 #  DEPENDS system_lib
 )
 
@@ -124,8 +124,8 @@ include
 
 add_executable(controls src/main.cpp)
 target_link_libraries(controls  ${catkin_LIBRARIES})
-#add_executable(control_tuning src/main_tuner.cpp)
-#target_link_libraries(control_tuning  ${catkin_LIBRARIES} ncurses)
+add_executable(control_tuning src/main_tuner.cpp)
+target_link_libraries(control_tuning  ${catkin_LIBRARIES})
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/mira_controller.cpp
@@ -185,9 +185,9 @@ target_link_libraries(controls  ${catkin_LIBRARIES})
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
+# install(DIRECTORY include/mira_controller/
 #   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
+#   FILES_MATCHING PATTERN "*.hpp"
 #   PATTERN ".svn" EXCLUDE
 # )
 

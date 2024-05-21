@@ -5,8 +5,7 @@
 int main(int argc, char **argv) {
     ros::init(argc, argv, "joy_controller_node");
     ros::NodeHandle nh;
-    controller obj= controller(nh);
-    
+    controller obj  = controller(nh);
     while(ros::ok()){
         ros::spinOnce();
     }
