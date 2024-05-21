@@ -124,8 +124,8 @@ include
 
 add_executable(controls src/main.cpp)
 target_link_libraries(controls  ${catkin_LIBRARIES})
-#add_executable(control_tuning src/main_tuner.cpp)
-#target_link_libraries(control_tuning  ${catkin_LIBRARIES} ncurses)
+add_executable(control_tuning src/main_tuner.cpp)
+target_link_libraries(control_tuning  ${catkin_LIBRARIES})
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/mira_controller.cpp

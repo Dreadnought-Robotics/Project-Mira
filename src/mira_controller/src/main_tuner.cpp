@@ -11,7 +11,7 @@
 //   +ve
 
 Control yaw, depth, forward, lateral;
-std::vector<double> pid_constants{2,0,0};
+std::vector<double> pid_constants{0.93,0.087,12.1};
 #define threshold 8 //degrees
 
 custom_msgs::commands cmd_pwm;
@@ -22,6 +22,10 @@ void keys_callback(const std_msgs::Char::ConstPtr& msg) {
         if (key == 'q') {
             cmd_pwm.arm = false;
             std::cout << "unarmed\n";
+            forward.emptyError();
+            yaw.emptyError();
+            depth.emptyError();
+            lateral.emptyError();
         }
         else if (key == 'p') {
             cmd_pwm.arm = true;
@@ -74,7 +78,7 @@ int main(int argc, char **argv) {
     bool arm    = true;
     double init_time = ros::Time::now().toSec();
     double prev_time = ros::Time::now().toSec();
-    cmd_pwm.arm = true;
+    cmd_pwm.arm = false;
     char c;
     cmd_pwm.mode="STABILIZE";
     float _h = 0.000001;
@@ -120,6 +124,10 @@ int main(int argc, char **argv) {
         if (!cmd_pwm.arm) {
             prev_time = ros::Time::now().toSec();
             std::cout << "press P for next iteration" << std::endl;
+            forward.emptyError();
+            yaw.emptyError();
+            depth.emptyError();
+            lateral.emptyError();
         }
         else {
             if (increasing_h) {
@@ -201,6 +209,7 @@ int main(int argc, char **argv) {
                     std::cout   << "Cost: " << cost << std::endl;
                     std::cout   << "Currently calculating cost without _h" << std::endl;
                     std::cout   << "current time: " << (time_now - prev_time) << std::endl;
+                    std::cout   << "new constants: " << pid_constants[0] << " " <<pid_constants[1] << " " << pid_constants[2] << std::endl;
                 }
             }
         }

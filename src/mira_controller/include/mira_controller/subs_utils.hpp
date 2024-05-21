@@ -41,6 +41,11 @@ class Subscriber {
             forward_error           = msg->x;
             lateral_error           = msg->y;
             depth_error             = msg->z;
+            // yaw_error               = 0;
+            // forward_error           = 0;
+            // lateral_error           = 0;
+            // depth_error             = 1050 - depth_external;
+            // std::cout << depth_error << std::endl;
         }
         void statusCallback(const geometry_msgs::Vector3::ConstPtr& msg) {
             yaw_locked              = msg->x;
@@ -49,6 +54,7 @@ class Subscriber {
         }
         void telemetryCallback(const custom_msgs::telemetry::ConstPtr& msg) {
             depth_external          = msg->external_pressure;
+            depth_error             = 1050 - depth_external;
         }
         // void rovCallback(const custom_msgs::commands msg) {
         //     rov_commands            = msg;
