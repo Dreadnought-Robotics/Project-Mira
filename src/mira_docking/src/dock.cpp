@@ -23,7 +23,7 @@ class Docking24 {
             center_subscriber       = nh.subscribe<geometry_msgs::Vector3>("/docking/center", 1, &Docking24::center_callback, this);
             docking_status          = nh.advertise<geometry_msgs::Vector3>("/docking/status", 1);
             telemetry_sub           = nh.subscribe<custom_msgs::telemetry>("/master/telemetry", 1, &Docking24::telemetryCallback, this);
-            commands_sub            = nh.subscribe<custom_msgs::commands>("/master/commands", 1, &Docking24::commandsCallback, this);
+            // commands_sub            = nh.subscribe<custom_msgs::commands>("/master/commands", 1, &Docking24::commandsCallback, this);
             heading_sub             = nh.subscribe<std_msgs::Float32>("/mira/heading", 1, &Docking24::headingCallback, this);
             error_pub               = nh.advertise<geometry_msgs::Quaternion>("/docking/errors", 1);
             yaw_lock                = nh.advertiseService("/yaw/lock", &Docking24::emptyYawServiceCallback, this);
@@ -192,8 +192,6 @@ class Docking24 {
         } 
         void telemetryCallback(const custom_msgs::telemetry::ConstPtr& msg) {
             depth_reading       = msg->external_pressure;
-        }
-        void commandsCallback(const custom_msgs::commands::ConstPtr& msg) {
             armed = msg->arm;
             if (armed == false) {
                 center_called   = false;
@@ -221,8 +219,12 @@ class Docking24 {
             }
             docking_status.publish(p);
         }
+        // void commandsCallback(const custom_msgs::commands::ConstPtr& msg) {
+
+        // }
         void headingCallback(const std_msgs::Float32::ConstPtr& msg) {
             heading_reading                 =msg->data;
+            // std::cout << "heafi: " << heading_reading<<std::endl;
         }
 };
 
