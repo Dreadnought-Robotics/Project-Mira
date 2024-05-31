@@ -241,10 +241,10 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg) {
     cv::line(frame, cv::Point(300, center_y), cv::Point(width - 300, center_y), cv::Scalar(0, 255, 0), 2);
     cv::line(frame, cv::Point(center_x, 220), cv::Point(center_x, height - 220), cv::Scalar(0, 255, 0), 2);
 
-    cv::resizeWindow("Camera Down View", 640, 480);
-    cv::moveWindow("Camera Down View", 1280, 0);
-    cv::imshow("Camera Down View", frame);
-    cv::waitKey(1);
+    // cv::resizeWindow("Camera Down View", 640, 480);
+    // cv::moveWindow("Camera Down View", 1280, 0);
+    // cv::imshow("Camera Down View", frame);
+    // cv::waitKey(1);
 }
 
 //send the feed to a new publisher called /camera_down/image_raw/compressed/aruco 

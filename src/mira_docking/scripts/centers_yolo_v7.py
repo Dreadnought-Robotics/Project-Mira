@@ -94,12 +94,12 @@ class YoloV7RosNode:
                             center_msg.x = min_x
                             center_msg.y = min_y
                         self.center_pub.publish(center_msg)
-                        cv2.circle(image_original, (min_x, min_y), 3, (255, 0, 0), -1)
+                        # cv2.circle(image_original, (min_x, min_y), 3, (255, 0, 0), -1)
                         prev_x = min_x
                         prev_y = min_y
         # Display annotated image
-        cv2.imshow("YOLOv7 Object Detection", image_original)
-        cv2.waitKey(1)
+        # cv2.imshow("YOLOv7 Object Detection", image_original)
+        # cv2.waitKey(1)
 
 
 if __name__ == "__main__":

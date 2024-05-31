@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
     char c;
     cmd_pwm.mode="STABILIZE";
     float _h = 0.000001;
-    double time_interval = 10.0;
+    double time_interval = 20.0;
     std::vector<double> cost_h{0,0,0};
     double cost;
     float dt = 0.05;

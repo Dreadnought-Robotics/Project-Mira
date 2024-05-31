@@ -44,28 +44,28 @@ void keys_callback(const std_msgs::Char::ConstPtr& msg) {
         std::cout << "armed\n";
     }
     else if (key == 'w') {
-        forward.kp = forward.kp+0.005;
-        std::cout <<"current forward kp value: "+ std::to_string(forward.kp) << std::endl;
+        depth.kp = depth.kp+0.005;
+        std::cout <<"current depth kp value: "+ std::to_string(depth.kp) << std::endl;
     }
     else if (key == 's') {
-        forward.kp = forward.kp-0.005;
-        std::cout <<"current forward kp value: "+ std::to_string(forward.kp)<< std::endl;
+        depth.kp = depth.kp-0.005;
+        std::cout <<"current depth kp value: "+ std::to_string(depth.kp)<< std::endl;
     }
     else if (key == 'e') {
-        forward.ki = forward.ki+0.001;
-        std::cout <<"current forward ki value: "+ std::to_string(forward.ki) << std::endl;
+        depth.ki = depth.ki+0.00025;
+        std::cout <<"current depth ki value: "+ std::to_string(depth.ki) << std::endl;
     }
     else if (key == 'd') {
-        forward.ki = forward.ki-0.001;
-        std::cout <<"current forward ki value: "+ std::to_string(forward.ki)<< std::endl;
+        depth.ki = depth.ki-0.00025;
+        std::cout <<"current depth ki value: "+ std::to_string(depth.ki)<< std::endl;
     }
     else if (key == 'r') {
-        forward.kd = forward.kd+0.1;
-        std::cout <<"current forward kd value: "+ std::to_string(forward.kd) << std::endl;
+        depth.kd = depth.kd+0.1;
+        std::cout <<"current depth kd value: "+ std::to_string(depth.kd) << std::endl;
     }
     else if (key == 'f') {
-        forward.kd = forward.kd-0.1;
-        std::cout <<"current forward kd value: "+ std::to_string(forward.kd)<< std::endl;
+        depth.kd = depth.kd-0.1;
+        std::cout <<"current depth kd value: "+ std::to_string(depth.kd)<< std::endl;
     }
     else if (key == 't') {
         yaw.kp = yaw.kp+0.005;
@@ -106,9 +106,9 @@ int main(int argc, char **argv) {
     yaw.kp                              = 0.35;
     yaw.ki                              = 0.027;
     yaw.kd                              = 5.0;
-    depth.kp                            = 0.93;
-    depth.ki                            = 0.087;
-    depth.kd                            = 12.1;
+    depth.kp                            = 1.78; //0.93;
+    depth.ki                            = 0.09; //0.087;
+    depth.kd                            = 4.4; //12.1;
     forward.kp                          = 0.125;
     forward.ki                          = 0.0;
     forward.kd                          = 0.15;
@@ -119,8 +119,8 @@ int main(int argc, char **argv) {
     ros::Time init_time                 = ros::Time::now();
     cmd_pwm.arm                         = false;
     while (ros::ok()) {
-        if (subs.autonomy_switch==true && subs.rov_commands.arm==true){
-            cmd_pwm.arm                     = subs.rov_commands.arm;
+        // if (subs.autonomy_switch==true){
+        //     cmd_pwm.arm                     = subs.rov_commands.arm;
             cmd_pwm.mode                    = "STABILIZE";
             ros::Time time_now              = ros::Time::now();
             if (cmd_pwm.arm==true) {
@@ -145,14 +145,14 @@ int main(int argc, char **argv) {
                 std_msgs::Float32MultiArray v;
             }
             pwm_publisher.publish(cmd_pwm);
-        }
-        else {
-            forward.emptyError();
-            yaw.emptyError();
-            depth.emptyError();
-            lateral.emptyError();
-            // pwm_publisher.publish(subs.rov_commands);
-        }
+        // }
+        // else {
+        //     forward.emptyError();
+        //     yaw.emptyError();
+        //     depth.emptyError();
+        //     lateral.emptyError();
+        //     // pwm_publisher.publish(subs.rov_commands);
+        // }
         
         ros::spinOnce();
     }
