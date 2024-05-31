@@ -5,7 +5,7 @@
 #include <std_srvs/Empty.h>
 #include <std_msgs/Float32.h>
 #include <../../mira_controller/include/mira_controller/control_utils.hpp>
-//yaw lock function and depth hold function added 
+
 class controller{
     public:
         Control                             yaw;
@@ -26,7 +26,7 @@ class controller{
             heading_sub = nh.subscribe<std_msgs::Float32>("/mira/heading", 1, &controller::headingCallback, this);
             depth_sub = nh.subscribe<custom_msgs::telemetry> ("/master/telemetry", 1 , &controller::depthCallback, this);
             base_pwm_pub = nh.advertise<custom_msgs::commands>("/rov/commands",1);
-            base_pwm_pub_master = nh.advertise<custom_msgs::commands>("/master/commands",1);
+            // base_pwm_pub_master = nh.advertise<custom_msgs::commands>("/master/commands",1);
             base_pwm_pub = nh.advertise<custom_msgs::commands>("/rov/commands",1);
             autonomy                = nh.serviceClient<std_srvs::Empty>("/mira/switch");
             msg_to_pub.arm=0;
@@ -190,11 +190,11 @@ class controller{
                 msg_to_pub.mode="ALT_HOLD";
                 ROS_INFO("Mode changed to ALT_HOLD ");
             }
-            if (autonomy_switch==false){
-                base_pwm_pub_master.publish(msg_to_pub);
-            }
-            else {
+            // if (autonomy_switch==false){
+            //     base_pwm_pub_master.publish(msg_to_pub);
+            // }
+            // else {
                 base_pwm_pub.publish(msg_to_pub);     
-            }
+            // }
         }
 };

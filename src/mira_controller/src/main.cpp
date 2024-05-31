@@ -44,19 +44,19 @@ void keys_callback(const std_msgs::Char::ConstPtr& msg) {
         std::cout << "armed\n";
     }
     else if (key == 'w') {
-        depth.kp = depth.kp+0.005;
+        depth.kp = depth.kp+0.01;
         std::cout <<"current depth kp value: "+ std::to_string(depth.kp) << std::endl;
     }
     else if (key == 's') {
-        depth.kp = depth.kp-0.005;
+        depth.kp = depth.kp-0.01;
         std::cout <<"current depth kp value: "+ std::to_string(depth.kp)<< std::endl;
     }
     else if (key == 'e') {
-        depth.ki = depth.ki+0.00025;
+        depth.ki = depth.ki+0.001;
         std::cout <<"current depth ki value: "+ std::to_string(depth.ki) << std::endl;
     }
     else if (key == 'd') {
-        depth.ki = depth.ki-0.00025;
+        depth.ki = depth.ki-0.001;
         std::cout <<"current depth ki value: "+ std::to_string(depth.ki)<< std::endl;
     }
     else if (key == 'r') {
@@ -106,9 +106,12 @@ int main(int argc, char **argv) {
     yaw.kp                              = 0.35;
     yaw.ki                              = 0.027;
     yaw.kd                              = 5.0;
-    depth.kp                            = 1.78; //0.93;
-    depth.ki                            = 0.09; //0.087;
-    depth.kd                            = 4.4; //12.1;
+    depth.kp                            = 0.93;
+    depth.ki                            = 0.087;
+    depth.kd                            = 12.1;
+    // depth.kp                            = 0.83;
+    // depth.ki                            = 0.0205;
+    // depth.kd                            = 8.6;
     forward.kp                          = 0.125;
     forward.ki                          = 0.0;
     forward.kd                          = 0.15;
@@ -120,7 +123,8 @@ int main(int argc, char **argv) {
     cmd_pwm.arm                         = false;
     while (ros::ok()) {
         // if (subs.autonomy_switch==true){
-        //     cmd_pwm.arm                     = subs.rov_commands.arm;
+        if (subs.armed==true){
+            cmd_pwm.arm                     = subs.armed;
             cmd_pwm.mode                    = "STABILIZE";
             ros::Time time_now              = ros::Time::now();
             if (cmd_pwm.arm==true) {
@@ -145,14 +149,14 @@ int main(int argc, char **argv) {
                 std_msgs::Float32MultiArray v;
             }
             pwm_publisher.publish(cmd_pwm);
-        // }
-        // else {
-        //     forward.emptyError();
-        //     yaw.emptyError();
-        //     depth.emptyError();
-        //     lateral.emptyError();
-        //     // pwm_publisher.publish(subs.rov_commands);
-        // }
+        }
+        else {
+            forward.emptyError();
+            yaw.emptyError();
+            depth.emptyError();
+            lateral.emptyError();
+            // pwm_publisher.publish(subs.rov_commands);
+        }
         
         ros::spinOnce();
     }

@@ -1,5 +1,6 @@
 int32 timestamp
-
+float32 battery_voltage
+bool arm
 int32 imu_gyro_x
 int32 imu_gyro_y
 int32 imu_gyro_z
