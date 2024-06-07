@@ -106,9 +106,12 @@ int main(int argc, char **argv) {
     yaw.kp                              = 0.35;
     yaw.ki                              = 0.027;
     yaw.kd                              = 5.0;
-    depth.kp                            = 0.93;
+    depth.kp                            = 1;
     depth.ki                            = 0.087;
-    depth.kd                            = 12.1;
+    depth.kd                            = 14.1;
+    // depth.kp                            = 0.913266;
+    // depth.ki                            = 0.0668329;
+    // depth.kd                            = 12.054;
     // depth.kp                            = 0.83;
     // depth.ki                            = 0.0205;
     // depth.kd                            = 8.6;

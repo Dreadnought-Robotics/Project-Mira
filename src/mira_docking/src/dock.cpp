@@ -121,6 +121,7 @@ class Docking24 {
                     }
                 }
                 else {
+                    //Comment the below if condition to disable center lock
                     if (sqrt(forward_error*forward_error)<=distance_threshold && sqrt(lateral_error*lateral_error)<=distance_threshold) {
                         center_called = true;
                         ROS_INFO("Center Lock is Enabled");
