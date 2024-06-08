@@ -1,14 +1,16 @@
 #!/usr/bin/python3
-import rospy
-import torch
-from sensor_msgs.msg import CompressedImage
+import os
+
 import cv2
 import numpy as np
-import rospkg, os
-from yolov7.models.experimental import attempt_load
-from yolov7.utils.general import non_max_suppression, scale_coords
-from yolov7.utils.datasets import letterbox
+import rospkg
+import rospy
+import torch
 from geometry_msgs.msg import Vector3
+from sensor_msgs.msg import CompressedImage
+from yolov7.models.experimental import attempt_load
+from yolov7.utils.datasets import letterbox
+from yolov7.utils.general import non_max_suppression, scale_coords
 
 
 class YoloV7RosNode:
@@ -27,12 +29,14 @@ class YoloV7RosNode:
 
         rospack = rospkg.RosPack()
         package_path = rospack.get_path("mira_docking")
+
         # Load YOLOv7 model
         model_path = os.path.join(package_path, "scripts/best.pt")
         self.model = attempt_load(model_path, map_location=self.device)
 
         self.model.to(self.device).eval()
         self.center_pub = rospy.Publisher("/docking/center", Vector3, queue_size=1)
+
         # Subscriber to the compressed image topic
         self.image_sub = rospy.Subscriber(
             "/camera_down/image_raw/compressed", CompressedImage, self.callback
