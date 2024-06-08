@@ -24,11 +24,17 @@
     // yaw.kd                              = 3.7;
 */
 
-
-bool forward_bool = false;
+//Predefined Variables
 #define threshold 8 //degrees
+
+//Control parameters and PWM Commands
+bool forward_bool = false;
 custom_msgs::commands   cmd_pwm;
 Control     forward, depth, yaw, lateral;
+
+/* Keys callback 
+    Function for tuning the PID parameters
+*/
 void keys_callback(const std_msgs::Char::ConstPtr& msg) {
     char key = msg->data;
     if (key == 'q') {
@@ -98,14 +104,24 @@ void keys_callback(const std_msgs::Char::ConstPtr& msg) {
 }
 
 int main(int argc, char **argv) {
+    //ROS Node Declaration
     ros::init(argc, argv, "auv_controller");
     ros::NodeHandle                     nh;
+
+    //ROS Publisher 
     ros::Publisher pwm_publisher        = nh.advertise<custom_msgs::commands>("/master/commands", 1);
+
+    //ROS Subscriber
     ros::Subscriber keys_subscriber     = nh.subscribe("keys", 1, keys_callback);
     Subscriber                          subs(nh);
+
+    //Control Parameters Definition
+    //Yaw
     yaw.kp                              = 0.35;
     yaw.ki                              = 0.027;
     yaw.kd                              = 5.0;
+
+    //Depth
     depth.kp                            = 1;
     depth.ki                            = 0.087;
     depth.kd                            = 14.1;
@@ -115,40 +131,52 @@ int main(int argc, char **argv) {
     // depth.kp                            = 0.83;
     // depth.ki                            = 0.0205;
     // depth.kd                            = 8.6;
+
+    //Forward
     forward.kp                          = 0.125;
     forward.ki                          = 0.0;
     forward.kd                          = 0.15;
+
+    //Lateral
     lateral.kp                          = 0.125;
     lateral.ki                          = 0.0;
     lateral.kd                          = 0.15;
+
+    //Arm Disarm Parameter
     bool arm                            = false;
     ros::Time init_time                 = ros::Time::now();
     cmd_pwm.arm                         = false;
+
     while (ros::ok()) {
         // if (subs.autonomy_switch==true){
         if (subs.armed==true){
             cmd_pwm.arm                     = subs.armed;
             cmd_pwm.mode                    = "STABILIZE";
             ros::Time time_now              = ros::Time::now();
+
             if (cmd_pwm.arm==true) {
                 float pid_forward           = forward.pid_control(subs.forward_error,(time_now-init_time).toSec(), true);
                 float pid_lateral           = lateral.pid_control(subs.lateral_error,(time_now-init_time).toSec(), false);
                 float pid_depth             = depth.pid_control(subs.depth_error,(time_now-init_time).toSec(), false);
                 float pid_yaw               = 0;
+
                 if (subs.yaw_locked==true) {
                     pid_yaw                 = yaw.pid_control(subs.yaw_error,(time_now-init_time).toSec(), false);
                 }
                 else {
                     pid_yaw                 = yaw.pid_control(subs.yaw_error,(time_now-init_time).toSec(), true);
                 }
+
                 cmd_pwm.forward             = pid_forward;
                 cmd_pwm.lateral             = pid_lateral;
                 cmd_pwm.thrust              = pid_depth;
                 cmd_pwm.yaw                 = pid_yaw;
+
                 if (subs.depth_external>1100) {
                     cmd_pwm.forward         = 1500;
                     cmd_pwm.lateral         = 1500;
                 }
+                
                 std_msgs::Float32MultiArray v;
             }
             pwm_publisher.publish(cmd_pwm);
