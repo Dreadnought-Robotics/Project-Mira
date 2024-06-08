@@ -7,8 +7,13 @@
 #include <custom_msgs/telemetry.h>
 #include <std_msgs/Float32.h>
 #include <custom_msgs/commands.h>
+
+//Predefined Variables
 #define distance_threshold 15
 #define theta_threshold 0.1
+#define surface_pressure; = 1025;
+#define dock_pressure = 1500;
+#define delta = 10;
 
 /*
 640*480
@@ -18,6 +23,7 @@
 
 class Docking24 {
     public:
+    //Constructor
         Docking24(ros::NodeHandle nh) {
             aruco_subscriber        = nh.subscribe<std_msgs::Float32MultiArray>("/aruco/pixels", 1, &Docking24::pixel_callback, this);
             center_subscriber       = nh.subscribe<geometry_msgs::Vector3>("/docking/center", 1, &Docking24::center_callback, this);
@@ -32,22 +38,34 @@ class Docking24 {
         }
 
     private:
+        //ROS Publishers declarations
         ros::Publisher          error_pub;
         ros::Publisher          docking_status;
+
+        //ROS Subscribers declarations
         ros::Subscriber         aruco_subscriber;
         ros::Subscriber         center_subscriber;
         ros::Subscriber         heading_sub;
         ros::Subscriber         commands_sub;
         ros::Subscriber         telemetry_sub;
+
+        //ROS Services declarations
         ros::ServiceServer      yaw_lock;
         ros::ServiceServer      depth_lock;
+
+        //Control Flags
         bool yaw_locked         = false;
         bool center_called      = false;
         bool depth_called       = false;
         bool armed              = false;
-        float heading_mark, heading_reading;
-        float depth_mark,   depth_reading;
+
+        //Control Points Variables
+        float heading_mark, heading_reading, depth_mark, depth_reading;
         int marked_aruco, marked_index;
+
+        /* Yaw Service Callback 
+            Toggles the yaw lock status. If armed and yaw_lock is activated, it sets the heading_mark to the current heading_reading.
+        */
         bool emptyYawServiceCallback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
             if (armed==true){
                 yaw_locked = !yaw_locked;
@@ -64,6 +82,11 @@ class Docking24 {
             }
             return false;
         }
+
+        /* Depth Service Callback
+            Toggles the depth lock status. If armed and depth_lock is activated, it sets the depth_mark to the current depth_reading.
+        */
+
         bool emptyDepthServiceCallback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
             if (armed==true) {
                 depth_called = !depth_called;
@@ -78,41 +101,50 @@ class Docking24 {
             }
             return false;
         }
+
+        /* Aruco Callback using pixel coordinates
+            Processes the detected Aruco markers, determines the closest marker, and computes errors for forward, lateral, and heading based on the marker positions.
+        */
+
         void pixel_callback(const std_msgs::Float32MultiArray::ConstPtr& msg) {
-            int no_of_arucos = msg->data.size()/4, buffer_X, buffer_Y;
+            
+            int no_of_arucos_detected = msg->data.size()/4, buffer_X, buffer_Y;
             float forward_error, lateral_error, heading_error;  
             float min_distance = 999999;
-            for (int i=0; i<no_of_arucos; i++) {
-                forward_error = 100+(-1*msg->data[i*no_of_arucos + 2] + 240);
-                lateral_error = 100+(-1*msg->data[i*no_of_arucos + 3] + 320);
+
+
+            for (int i=0; i<no_of_arucos_detected; i++) {
+                forward_error = 100+(-1*msg->data[i*no_of_arucos_detected + 2] + 240);
+                lateral_error = 100+(-1*msg->data[i*no_of_arucos_detected + 3] + 320);
                 if (min_distance>sqrt(forward_error*forward_error+lateral_error*lateral_error)) {
                     min_distance = sqrt(forward_error*forward_error+lateral_error*lateral_error);
-                    marked_aruco = msg->data[i*no_of_arucos];
+                    marked_aruco = msg->data[i*no_of_arucos_detected];
                     marked_index = i;
                 }
             }
-            if (marked_aruco==96){
-                buffer_X = 100;
-                buffer_Y = 100;
+
+            //Setting x, y delta for center lock
+            std::vector<std::vector<int>> buffer {{100,100}, {100,-100}, {-100,-100}, {-100,100}};
+            int idx = -1;
+
+            if (marked_aruco == 96) idx = 0;
+            else if (marked_aruco == 19) idx = 1;
+            else if (marked_aruco == 28) idx = 2;
+            else if (marked_aruco == 7) idx = 3;
+
+            if (idx != -1) {
+                buffer_X = buffer[idx][0];
+                buffer_Y = buffer[idx][1];
             }
-            else if (marked_aruco==19){
-                buffer_X = 100;
-                buffer_Y = -100;
-            }
-            else if (marked_aruco==28){
-                buffer_X = -100;
-                buffer_Y = -100;
-            }
-            else {
-                buffer_X = -100;
-                buffer_Y = 100;
-            }
-            if (msg->data[marked_index*no_of_arucos] == marked_aruco && center_called==false) {
-                // ROS_INFO("Marked Aruco: %d, X: %f, Y: %f", marked_aruco, -1*msg->data[marked_index*no_of_arucos + 2] + 240, -1*msg->data[marked_index*no_of_arucos + 3] + 320);
-                forward_error = buffer_X+(-1*msg->data[marked_index*no_of_arucos + 2] + 240);
-                lateral_error = buffer_Y+(-1*msg->data[marked_index*no_of_arucos + 3] + 320);
+
+            if (msg->data[marked_index*no_of_arucos_detected] == marked_aruco && center_called==false) {
+                // ROS_INFO("Marked Aruco: %d, X: %f, Y: %f", marked_aruco, -1*msg->data[marked_index*no_of_arucos_detected + 2] + 240, -1*msg->data[marked_index*no_of_arucos_detected + 3] + 320);
+                forward_error = buffer_X+(-1*msg->data[marked_index*no_of_arucos_detected + 2] + 240);
+                lateral_error = buffer_Y+(-1*msg->data[marked_index*no_of_arucos_detected + 3] + 320);
+
                 if (yaw_locked==false && armed==true) {
-                    heading_error = msg->data[marked_index*no_of_arucos + 1]; 
+                    heading_error = msg->data[marked_index*no_of_arucos_detected + 1]; 
+
                     if (sqrt(heading_error*heading_error)<=theta_threshold) {
                         yaw_locked = true;
                         heading_mark = heading_reading;
@@ -120,6 +152,7 @@ class Docking24 {
                         ROS_INFO("Yaw Lock is Enabled");
                     }
                 }
+
                 else {
                     //Comment the below if condition to disable center lock
                     if (sqrt(forward_error*forward_error)<=distance_threshold && sqrt(lateral_error*lateral_error)<=distance_threshold) {
@@ -128,37 +161,34 @@ class Docking24 {
                     }
                     heading_error = heading_mark - heading_reading;
                 }
-                if (heading_error<-180) {
-                    heading_error = heading_error+360;
-                }
-                else if(heading_error>180) {
-                    heading_error = heading_error-360;
-                }
-                else {
-                        
-                }   
+
+                if (heading_error<-180) heading_error = heading_error+360;
+                else if(heading_error>180) heading_error = heading_error-360;}
+
                 geometry_msgs::Quaternion q;
                 q.w = heading_error;
                 q.x = forward_error;
                 q.y = lateral_error;
                 q.z = 1025 - depth_reading;
+
                 error_pub.publish(q);
             }       
         }
+
+        /* Center Callback
+            Processes the docking center position, computes forward, lateral, heading, and depth errors, and publishes them.
+        */
         void center_callback(const geometry_msgs::Vector3::ConstPtr& msg) {
             float forward_error, lateral_error, heading_error, depth_error;  
+
             if (center_called==true) {
                 forward_error = (-1*msg->y + 240);
                 lateral_error = (-1*msg->x + 320);
                 heading_error = heading_mark - heading_reading;
-                if (heading_error<-180) {
-                    heading_error = heading_error+360;
-                }
-                else if(heading_error>180) {
-                    heading_error = heading_error-360;
-                }
-                else {          
-                }   
+
+                if (heading_error<-180) heading_error = heading_error+360;
+                else if(heading_error>180) heading_error = heading_error-360;
+        
                 if (depth_called == false){
                     if (sqrt(forward_error*forward_error)<=distance_threshold && sqrt(lateral_error*lateral_error)<=distance_threshold) {
                         depth_called = true;
@@ -167,30 +197,72 @@ class Docking24 {
                     depth_error = 1025 - depth_reading;
                 }
                 else {
-                    if(depth_reading<1040) {
-                        depth_error = 1040 - depth_reading;
-                    } else if(depth_reading>1055 && depth_reading<1070){
-                        depth_error = 1070 - depth_reading;
-                    } else if(depth_reading>1040 && depth_reading<1055){
+                    if (depth_reading < surface_pressure) {
+                        depth_error = surface_pressure - depth_reading;
+                    } else if (depth_reading > 1025 && depth_reading <= 1035) {
+                        depth_error = 1035 - depth_reading;
+                    } else if (depth_reading > 1035 && depth_reading <= 1045) {
+                        depth_error = 1045 - depth_reading;
+                    } else if (depth_reading > 1045 && depth_reading <= 1055) {
                         depth_error = 1055 - depth_reading;
-                    }else if(depth_reading>1070 && depth_reading<1085){
+                    } else if (depth_reading > 1055 && depth_reading <= 1065) {
+                        depth_error = 1065 - depth_reading;
+                    } else if (depth_reading > 1065 && depth_reading <= 1075) {
+                        depth_error = 1075 - depth_reading;
+                    } else if (depth_reading > 1075 && depth_reading <= 1085) {
                         depth_error = 1085 - depth_reading;
-                    }
-                    else if(depth_reading>1085 && depth_reading<1100){
-                        depth_error = 1100 - depth_reading;
-                    }
-                    else {
-                        depth_error = 1110 - depth_reading;
+                    } else if (depth_reading > 1085 && depth_reading <= 1095) {
+                        depth_error = 1095 - depth_reading;
+                    } else if (depth_reading > 1095 && depth_reading <= 1105) {
+                        depth_error = 1105 - depth_reading;
+                    } else if (depth_reading > 1105 && depth_reading <= 1115) {
+                        depth_error = 1115 - depth_reading;
+                    } else if (depth_reading > 1115 && depth_reading <= 1125) {
+                        depth_error = 1125 - depth_reading;
+                    } else if (depth_reading > 1125 && depth_reading <= 1135) {
+                        depth_error = 1135 - depth_reading;
+                    } else if (depth_reading > 1135 && depth_reading <= 1145) {
+                        depth_error = 1145 - depth_reading;
+                    } else if (depth_reading > 1145 && depth_reading <= 1155) {
+                        depth_error = 1155 - depth_reading;
+                    } else if (depth_reading > 1155 && depth_reading <= 1165) {
+                        depth_error = 1165 - depth_reading;
+                    } else if (depth_reading > 1165 && depth_reading <= 1175) {
+                        depth_error = 1175 - depth_reading;
+                    } else if (depth_reading > 1175 && depth_reading <= 1185) {
+                        depth_error = 1185 - depth_reading;
+                    } else if (depth_reading > 1185 && depth_reading <= 1195) {
+                        depth_error = 1195 - depth_reading;
+                    } else if (depth_reading > 1195 && depth_reading <= 1205) {
+                        depth_error = 1205 - depth_reading;
+                    } else if (depth_reading > 1205 && depth_reading <= 1215) {
+                        depth_error = 1215 - depth_reading;
+                    } else if (depth_reading > 1215 && depth_reading <= 1225) {
+                        depth_error = 1225 - depth_reading;
+                    } else if (depth_reading > 1225 && depth_reading <= 1235) {
+                        depth_error = 1235 - depth_reading;
+                    } else if (depth_reading > 1235 && depth_reading <= 1245) {
+                        depth_error = 1245 - depth_reading;
+                    } else if (depth_reading > 1245 && depth_reading <= 1250) {
+                        depth_error = 1250 - depth_reading;
+                    } else {
+                        depth_error = dock_pressure - depth_reading;
                     }
                 }
+
                 geometry_msgs::Quaternion q;
                 q.w = heading_error;
                 q.x = forward_error;
                 q.y = lateral_error;
                 q.z = depth_error;
+
                 error_pub.publish(q);
             }
         } 
+        
+        /* Telemetry Callback
+            Updates the depth reading and armed status. Resets control flags if the system is disarmed.
+        */
         void telemetryCallback(const custom_msgs::telemetry::ConstPtr& msg) {
             depth_reading       = msg->external_pressure;
             armed = msg->arm;
@@ -203,26 +275,26 @@ class Docking24 {
                 // ROS_INFO("Yaw Lock is Disabled");
             }
             geometry_msgs::Quaternion p;
-            if (yaw_locked==false){
-                p.x = 0;
-            } else{
-                p.x = 1;
-            }
-            if (center_called==false){
-                p.y = 0;
-            } else{
-                p.y = 1;
-            }
-            if (depth_called==false){
-                p.z = 0;
-            } else{
-                p.z = 1;
-            }
+            
+            if (yaw_locked==false) p.x = 0;
+            else p.x = 1;
+
+            if (center_called==false) p.y = 0;
+            else p.y = 1; 
+
+            if (depth_called==false) p.z = 0;
+            else p.z = 1; 
+            
             docking_status.publish(p);
         }
+        
         // void commandsCallback(const custom_msgs::commands::ConstPtr& msg) {
 
         // }
+
+        /* Heading Callback
+            Updates the current heading reading.
+        */
         void headingCallback(const std_msgs::Float32::ConstPtr& msg) {
             heading_reading                 =msg->data;
             // std::cout << "heafi: " << heading_reading<<std::endl;
