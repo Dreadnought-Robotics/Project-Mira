@@ -122,7 +122,7 @@ private:
         float forward_error, lateral_error, heading_error;
         float min_distance = 999999;
         if ((no_of_arucos_detected==1) && (msg->data[0]==99)) {
-            forward_error = 50;
+            forward_error = 75;
         }
         else {
             for (int i = 0; i < no_of_arucos_detected; i++)
