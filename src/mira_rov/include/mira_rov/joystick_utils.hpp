@@ -45,7 +45,7 @@ class controller{
             depth_controller.kp  = 1;
             depth_controller.ki  = 0.087;
             depth_controller.kd  = 14.1;
-            sensitivity          = 1;
+            sensitivity          = 0.6;
 
         }
         void depthCallback(const custom_msgs::telemetry::ConstPtr& msg) {
@@ -70,7 +70,7 @@ class controller{
             prev_msg               = arm_disarm;
             arm_disarm             = msg->buttons[0];
             ros::Time time_now     = ros::Time::now();
-            msg_to_pub.roll        = 1500+((msg->axes[1])*400);
+            msg_to_pub.roll        = 1500+((msg->axes[1])*200);
             msg_to_pub.pitch       = 1500;
             // msg_to_pub.roll=1500+(((msg->buttons[4])*-400)+((msg->buttons[5])*400))*sensitivity;
             msg_to_pub.thrust      = 1500+((((msg->axes[5])+1)*-200)+(((msg->axes[2])+1)*200))*sensitivity;
@@ -190,7 +190,7 @@ class controller{
                 }
             }
             if (pitch_button==1) {
-                msg_to_pub.pitch = 1550;
+                msg_to_pub.pitch = 1700;
             }
             else {
                 msg_to_pub.pitch = 1500;

@@ -11,7 +11,7 @@
 // Predefined Variables
 #define distance_threshold 15
 #define theta_threshold 0.1
-#define surface_pressure 1150
+#define surface_pressure 1100
 #define dock_pressure 1234
 #define delta 10
 
@@ -122,10 +122,10 @@ private:
         int no_of_arucos_detected = msg->data.size() / 4, buffer_X, buffer_Y;
         float forward_error, lateral_error, heading_error;
         float min_distance = 999999;
-        if ((no_of_arucos_detected==1) && (msg->data[0]==0)) {
-            forward_error = 50;
-        }
-        else {
+        // if ((no_of_arucos_detected==1) && (msg->data[0]==0)) {
+        //     forward_error = 50;
+        // }
+        // else {
             for (int i = 0; i < no_of_arucos_detected; i++)
             {
                 forward_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 2] + 240);
@@ -137,7 +137,7 @@ private:
                     marked_index = i;
                 }
             }
-        }
+        // }
 
         // Setting x, y delta for center lock
         std::vector<std::vector<int>> buffer{{100, 100}, {100, -100}, {-100, -100}, {-100, 100}};
@@ -158,7 +158,7 @@ private:
             buffer_Y = buffer[idx][1];
         }
 
-        if (msg->data[marked_index * no_of_arucos_detected] == marked_aruco && center_called == false)
+        if (msg->data[marked_index * no_of_arucos_detected] == marked_aruco && center_called == false && armed==true)
         {
             // ROS_INFO("Marked Aruco: %d, X: %f, Y: %f", marked_aruco, -1*msg->data[marked_index*no_of_arucos_detected + 2] + 240, -1*msg->data[marked_index*no_of_arucos_detected + 3] + 320);
             forward_error = buffer_X + (-1 * msg->data[marked_index * no_of_arucos_detected + 2] + 240);
@@ -198,7 +198,7 @@ private:
         q.w = heading_error;
         q.x = forward_error;
         q.y = lateral_error;
-        q.z = 1025 - depth_reading;
+        q.z = surface_pressure - depth_reading;
 
         error_pub.publish(q);
     }
@@ -228,7 +228,7 @@ private:
                     depth_called = true;
                     ROS_INFO("Depth Lock is Enabled");
                 }
-                depth_error = 1025 - depth_reading;
+                depth_error = surface_pressure - depth_reading;
             }
             else
             {
@@ -236,54 +236,54 @@ private:
                 {
                     depth_error = surface_pressure - depth_reading;
                 }
-                else if (depth_reading > 1025 && depth_reading <= 1035)
-                {
-                    depth_error = 1035 - depth_reading;
-                }
-                else if (depth_reading > 1035 && depth_reading <= 1045)
-                {
-                    depth_error = 1045 - depth_reading;
-                }
-                else if (depth_reading > 1045 && depth_reading <= 1055)
-                {
-                    depth_error = 1055 - depth_reading;
-                }
-                else if (depth_reading > 1055 && depth_reading <= 1065)
-                {
-                    depth_error = 1065 - depth_reading;
-                }
-                else if (depth_reading > 1065 && depth_reading <= 1075)
-                {
-                    depth_error = 1075 - depth_reading;
-                }
-                else if (depth_reading > 1075 && depth_reading <= 1085)
-                {
-                    depth_error = 1085 - depth_reading;
-                }
-                else if (depth_reading > 1085 && depth_reading <= 1095)
-                {
-                    depth_error = 1095 - depth_reading;
-                }
-                else if (depth_reading > 1095 && depth_reading <= 1105)
-                {
-                    depth_error = 1105 - depth_reading;
-                }
-                else if (depth_reading > 1105 && depth_reading <= 1115)
-                {
-                    depth_error = 1115 - depth_reading;
-                }
-                else if (depth_reading > 1115 && depth_reading <= 1125)
-                {
-                    depth_error = 1125 - depth_reading;
-                }
-                else if (depth_reading > 1125 && depth_reading <= 1135)
-                {
-                    depth_error = 1135 - depth_reading;
-                }
-                else if (depth_reading > 1135 && depth_reading <= 1145)
-                {
-                    depth_error = 1145 - depth_reading;
-                }
+                // else if (depth_reading > 1025 && depth_reading <= 1035)
+                // {
+                //     depth_error = 1035 - depth_reading;
+                // }
+                // else if (depth_reading > 1035 && depth_reading <= 1045)
+                // {
+                //     depth_error = 1045 - depth_reading;
+                // }
+                // else if (depth_reading > 1045 && depth_reading <= 1055)
+                // {
+                //     depth_error = 1055 - depth_reading;
+                // }
+                // else if (depth_reading > 1055 && depth_reading <= 1065)
+                // {
+                //     depth_error = 1065 - depth_reading;
+                // }
+                // else if (depth_reading > 1065 && depth_reading <= 1075)
+                // {
+                //     depth_error = 1075 - depth_reading;
+                // }
+                // else if (depth_reading > 1075 && depth_reading <= 1085)
+                // {
+                //     depth_error = 1085 - depth_reading;
+                // }
+                // else if (depth_reading > 1085 && depth_reading <= 1095)
+                // {
+                //     depth_error = 1095 - depth_reading;
+                // }
+                // else if (depth_reading > 1095 && depth_reading <= 1105)
+                // {
+                //     depth_error = 1105 - depth_reading;
+                // }
+                // else if (depth_reading > 1105 && depth_reading <= 1115)
+                // {
+                //     depth_error = 1115 - depth_reading;
+                // }
+                // else if (depth_reading > 1115 && depth_reading <= 1125)
+                // {
+                //     depth_error = 1125 - depth_reading;
+                // }
+                // else if (depth_reading > 1125 && depth_reading <= 1135)
+                // {
+                //     depth_error = 1135 - depth_reading;
+                // }
+                // else if (depth_reading > 1135 && depth_reading <= 1145)
+                // {
+                //     depth_error = 1145 - depth_reading;
+                // }
                 else if (depth_reading > 1145 && depth_reading <= 1155)
                 {
                     depth_error = 1155 - depth_reading;

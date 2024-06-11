@@ -240,14 +240,14 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr &msg)
         pixel_publisher.publish(p);
     }
     else {
-        std_msgs::Float32MultiArray p;
-        if (aruco_first_detection=false){
-            p.data.push_back(99);
-            p.data.push_back(0);
-            p.data.push_back(0);
-            p.data.push_back(0);
-            pixel_publisher.publish(p);
-        }
+        // std_msgs::Float32MultiArray p;
+        // if (aruco_first_detection=false){
+        //     p.data.push_back(99);
+        //     p.data.push_back(0);
+        //     p.data.push_back(0);
+        //     p.data.push_back(0);
+        //     pixel_publisher.publish(p);
+        // }
     }
 
     int center_x = width / 2;

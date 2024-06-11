@@ -56,6 +56,8 @@ def callback(msg):
 def pressure_callback(msg, depth_publisher):
     ext_pressure = msg.external_pressure
     depth = -((ext_pressure - surface_reading) * depth_constant)
+    f = Float64()
+    f.data = depth
     depth_pub.publish(depth)
 
 
@@ -70,6 +72,6 @@ if __name__ == "__main__":
     depth_pub = rospy.Publisher("/master/depth", Float64, queue_size=1)
 
     ext_pressure_sub = rospy.Subscriber(
-        "/master/telemetry", telemetry, pressure_callback
+        "/master/telemetry", telemetry, pressure_callback, depth_pub
     )
     rospy.spin()

@@ -21,7 +21,7 @@ public:
         status_sub = nh.subscribe("/docking/status", 1, &Subscriber::statusCallback, this);
         telemetry_sub = nh.subscribe("/master/telemetry", 1, &Subscriber::telemetryCallback, this);
         rov_sub = nh.subscribe("/rov/commands", 1, &Subscriber::rovCallback, this);
-        reset_service = nh.advertiseService("/docking/reset", &Subscriber::resetServiceCallback, this);
+        // reset_service = nh.advertiseService("/docking/reset", &Subscriber::resetServiceCallback, this);
     }
 
 private:
@@ -30,14 +30,6 @@ private:
     ros::Subscriber rov_sub;
     ros::Subscriber status_sub;
     ros::Subscriber telemetry_sub;
-    bool resetServiceCallback(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
-    {
-        // autonomy_switch = !autonomy_switch;
-        armed = false;
-        reseting = true;
-        ROS_INFO("RESET");
-        return true;
-    }
     void dockCallback(const geometry_msgs::Quaternion::ConstPtr &msg)
     {
         yaw_error = msg->w;
@@ -58,14 +50,7 @@ private:
     }
     void telemetryCallback(const custom_msgs::telemetry::ConstPtr &msg)
     {
-        if (reseting == false)
-        {
-            armed = msg->arm;
-        }
-        else
-        {
-            armed = false;
-        }
+        armed = msg->arm;
         depth_external = msg->external_pressure;
         if (depth_external < RESETDEPTH)
         {
