@@ -11,8 +11,8 @@
 // Predefined Variables
 #define distance_threshold 15
 #define theta_threshold 0.1
-#define surface_pressure 1025
-#define dock_pressure 1500
+#define surface_pressure 1150
+#define dock_pressure 1234
 #define delta 10
 
 /*
@@ -122,16 +122,20 @@ private:
         int no_of_arucos_detected = msg->data.size() / 4, buffer_X, buffer_Y;
         float forward_error, lateral_error, heading_error;
         float min_distance = 999999;
-
-        for (int i = 0; i < no_of_arucos_detected; i++)
-        {
-            forward_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 2] + 240);
-            lateral_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 3] + 320);
-            if (min_distance > sqrt(forward_error * forward_error + lateral_error * lateral_error))
+        if ((no_of_arucos_detected==1) && (msg->data[0]==0)) {
+            forward_error = 50;
+        }
+        else {
+            for (int i = 0; i < no_of_arucos_detected; i++)
             {
-                min_distance = sqrt(forward_error * forward_error + lateral_error * lateral_error);
-                marked_aruco = msg->data[i * no_of_arucos_detected];
-                marked_index = i;
+                forward_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 2] + 240);
+                lateral_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 3] + 320);
+                if (min_distance > sqrt(forward_error * forward_error + lateral_error * lateral_error))
+                {
+                    min_distance = sqrt(forward_error * forward_error + lateral_error * lateral_error);
+                    marked_aruco = msg->data[i * no_of_arucos_detected];
+                    marked_index = i;
+                }
             }
         }
 
@@ -314,15 +318,7 @@ private:
                 }
                 else if (depth_reading > 1225 && depth_reading <= 1235)
                 {
-                    depth_error = 1235 - depth_reading;
-                }
-                else if (depth_reading > 1235 && depth_reading <= 1245)
-                {
-                    depth_error = 1245 - depth_reading;
-                }
-                else if (depth_reading > 1245 && depth_reading <= 1250)
-                {
-                    depth_error = 1250 - depth_reading;
+                    depth_error = 1234 - depth_reading;
                 }
                 else
                 {

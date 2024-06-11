@@ -1,5 +1,10 @@
 #!/usr/bin/python3
+
 import os
+
+os.system(
+    "export PYTHONPATH=$PYTHONPATH:/home/f3rt/Project-Mira/src/mira_docking/scripts/yolov7/"
+)
 
 import cv2
 import numpy as np

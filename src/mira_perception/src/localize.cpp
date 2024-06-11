@@ -42,6 +42,8 @@ cv::Ptr<cv::aruco::DetectorParameters> param_markers = cv::aruco::DetectorParame
 ros::Publisher waypoint_publisher, pixel_publisher, docking_center_publisher;
 cv_bridge::CvImagePtr cv_ptr;
 
+bool aruco_first_detection = false;
+
 class Aruco
 {
 public:
@@ -225,6 +227,7 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr &msg)
 
             if (found == true)
             {
+                aruco_first_detection = true;
                 ROS_INFO("ARUCO FOUND");
             }
             else
@@ -235,6 +238,16 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr &msg)
 
         waypoint_publisher.publish(f);
         pixel_publisher.publish(p);
+    }
+    else {
+        std_msgs::Float32MultiArray p;
+        if (aruco_first_detection=false){
+            p.data.push_back(99);
+            p.data.push_back(0);
+            p.data.push_back(0);
+            p.data.push_back(0);
+            pixel_publisher.publish(p);
+        }
     }
 
     int center_x = width / 2;
