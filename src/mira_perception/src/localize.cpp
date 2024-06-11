@@ -240,20 +240,22 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr &msg)
         pixel_publisher.publish(p);
     }
     else {
-        // std_msgs::Float32MultiArray p;
-        // if (aruco_first_detection=false){
-        //     p.data.push_back(99);
-        //     p.data.push_back(0);
-        //     p.data.push_back(0);
-        //     p.data.push_back(0);
-        //     pixel_publisher.publish(p);
-        // }
+        std_msgs::Float32MultiArray p;
+        if (aruco_first_detection==false){
+            ROS_WARN("NO ARUCO DETECTED YET");
+            p.data.push_back(99);
+            p.data.push_back(0);
+            p.data.push_back(0);
+            p.data.push_back(0);
+            pixel_publisher.publish(p);
+        }
     }
 
     int center_x = width / 2;
     int center_y = height / 2;
     cv::line(frame, cv::Point(300, center_y), cv::Point(width - 300, center_y), cv::Scalar(0, 255, 0), 2);
     cv::line(frame, cv::Point(center_x, 220), cv::Point(center_x, height - 220), cv::Scalar(0, 255, 0), 2);
+    cv::imshow("rii", frame);
 }
 
 /* Main function

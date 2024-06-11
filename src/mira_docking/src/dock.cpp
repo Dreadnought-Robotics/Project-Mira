@@ -121,73 +121,77 @@ private:
         int no_of_arucos_detected = msg->data.size() / 4, buffer_X, buffer_Y;
         float forward_error, lateral_error, heading_error;
         float min_distance = 999999;
-        for (int i = 0; i < no_of_arucos_detected; i++)
-        {
-            forward_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 2] + 240);
-            lateral_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 3] + 320);
-            if (min_distance > sqrt(forward_error * forward_error + lateral_error * lateral_error))
-            {
-                min_distance = sqrt(forward_error * forward_error + lateral_error * lateral_error);
-                marked_aruco = msg->data[i * no_of_arucos_detected];
-                marked_index = i;
-            }
+        if ((no_of_arucos_detected==1) && (msg->data[0]==99)) {
+            forward_error = 50;
         }
-
-        // Setting x, y delta for center lock
-        std::vector<std::vector<int>> buffer{{100, 100}, {100, -100}, {-100, -100}, {-100, 100}};
-        int idx = -1;
-
-        if (marked_aruco == 96)
-            idx = 0;
-        else if (marked_aruco == 19)
-            idx = 1;
-        else if (marked_aruco == 28)
-            idx = 2;
-        else if (marked_aruco == 7)
-            idx = 3;
-
-        if (idx != -1)
-        {
-            buffer_X = buffer[idx][0];
-            buffer_Y = buffer[idx][1];
-        }
-
-        if (msg->data[marked_index * no_of_arucos_detected] == marked_aruco && center_called == false && armed==true)
-        {
-            // ROS_INFO("Marked Aruco: %d, X: %f, Y: %f", marked_aruco, -1*msg->data[marked_index*no_of_arucos_detected + 2] + 240, -1*msg->data[marked_index*no_of_arucos_detected + 3] + 320);
-            forward_error = buffer_X + (-1 * msg->data[marked_index * no_of_arucos_detected + 2] + 240);
-            lateral_error = buffer_Y + (-1 * msg->data[marked_index * no_of_arucos_detected + 3] + 320);
-
-            if (yaw_locked == false)
+        else {
+            for (int i = 0; i < no_of_arucos_detected; i++)
             {
-                heading_error = msg->data[marked_index * no_of_arucos_detected + 1];
-
-                if (sqrt(heading_error * heading_error) <= theta_threshold)
+                forward_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 2] + 240);
+                lateral_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 3] + 320);
+                if (min_distance > sqrt(forward_error * forward_error + lateral_error * lateral_error))
                 {
-                    yaw_locked = true;
-                    heading_mark = heading_reading;
-                    std::cout << "Marked Yaw: " << heading_mark << std::endl;
-                    ROS_INFO("Yaw Lock is Enabled");
+                    min_distance = sqrt(forward_error * forward_error + lateral_error * lateral_error);
+                    marked_aruco = msg->data[i * no_of_arucos_detected];
+                    marked_index = i;
                 }
             }
 
-            else
+            // Setting x, y delta for center lock
+            std::vector<std::vector<int>> buffer{{100, 100}, {100, -100}, {-100, -100}, {-100, 100}};
+            int idx = -1;
+
+            if (marked_aruco == 96)
+                idx = 0;
+            else if (marked_aruco == 19)
+                idx = 1;
+            else if (marked_aruco == 28)
+                idx = 2;
+            else if (marked_aruco == 7)
+                idx = 3;
+
+            if (idx != -1)
             {
-                // Comment the below if condition to disable center lock
-                if (sqrt(forward_error * forward_error) <= distance_threshold && sqrt(lateral_error * lateral_error) <= distance_threshold && center_called==false)
-                {
-                    center_called = true;
-                    ROS_INFO("Center Lock is Enabled");
-                }
-                heading_error = heading_mark - heading_reading;
+                buffer_X = buffer[idx][0];
+                buffer_Y = buffer[idx][1];
             }
 
-            if (heading_error < -180)
-                heading_error = heading_error + 360;
-            else if (heading_error > 180)
-                heading_error = heading_error - 360;
-        }
+            if (msg->data[marked_index * no_of_arucos_detected] == marked_aruco && center_called == false && armed==true)
+            {
+                // ROS_INFO("Marked Aruco: %d, X: %f, Y: %f", marked_aruco, -1*msg->data[marked_index*no_of_arucos_detected + 2] + 240, -1*msg->data[marked_index*no_of_arucos_detected + 3] + 320);
+                forward_error = buffer_X + (-1 * msg->data[marked_index * no_of_arucos_detected + 2] + 240);
+                lateral_error = buffer_Y + (-1 * msg->data[marked_index * no_of_arucos_detected + 3] + 320);
 
+                if (yaw_locked == false)
+                {
+                    heading_error = msg->data[marked_index * no_of_arucos_detected + 1];
+
+                    if (sqrt(heading_error * heading_error) <= theta_threshold)
+                    {
+                        yaw_locked = true;
+                        heading_mark = heading_reading;
+                        std::cout << "Marked Yaw: " << heading_mark << std::endl;
+                        ROS_INFO("Yaw Lock is Enabled");
+                    }
+                }
+
+                else
+                {
+                    // Comment the below if condition to disable center lock
+                    if (sqrt(forward_error * forward_error) <= distance_threshold && sqrt(lateral_error * lateral_error) <= distance_threshold && center_called==false)
+                    {
+                        center_called = true;
+                        ROS_INFO("Center Lock is Enabled");
+                    }
+                    heading_error = heading_mark - heading_reading;
+                }
+
+                if (heading_error < -180)
+                    heading_error = heading_error + 360;
+                else if (heading_error > 180)
+                    heading_error = heading_error - 360;
+            }
+        }
         geometry_msgs::Quaternion q;
         q.w = heading_error;
         q.x = forward_error;
