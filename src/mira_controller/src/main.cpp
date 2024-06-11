@@ -172,6 +172,15 @@ int main(int argc, char **argv) {
                 cmd_pwm.thrust              = pid_depth;
                 cmd_pwm.yaw                 = pid_yaw;
 
+                //pipeline uncomment
+                // if (subs.forward_error==500) {
+                //     cmd_pwm.forward         = 1430;
+                // }
+                // else if (subs.lateral_error==500) {
+                //     cmd_pwm.lateral         = 1570;
+                // }
+
+                //pipeline comment
                 if (subs.depth_external>1225) {
                     cmd_pwm.forward         = 1500;
                     cmd_pwm.lateral         = 1500;

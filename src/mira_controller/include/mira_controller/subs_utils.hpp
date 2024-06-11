@@ -52,10 +52,10 @@ private:
     {
         armed = msg->arm;
         depth_external = msg->external_pressure;
-        if (depth_external < RESETDEPTH)
-        {
-            reseting = false;
-        }
+        // if (depth_external < RESETDEPTH)
+        // {
+        //     reseting = false;
+        // }
         // depth_error             = 1025 - depth_external;
     }
     void rovCallback(const custom_msgs::commands msg)
