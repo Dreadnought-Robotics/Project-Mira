@@ -9,20 +9,20 @@ def main():
     rospy.init_node('video_publisher', anonymous=True)
     rate = rospy.Rate(60)  # Adjust the rate as needed
 
-    # cap = cv2.VideoCapture(1)
-    # if not cap.isOpened():
-    #     rospy.logerr("Error opening camera")
-    #     return
+    cap = cv2.VideoCapture(0)
+    if not cap.isOpened():
+        rospy.logerr("Error opening camera")
+        return
 
-    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
     pub = rospy.Publisher('/camera_down/image_raw/compressed', CompressedImage, queue_size=1)
     bridge = CvBridge()
 
     while not rospy.is_shutdown():
-        # ret, frame = cap.read()
-        frame = cv2.imread("/home/shasankgunturu/Desktop/b90.png")
+        ret, frame = cap.read()
+        # frame = cv2.imread("/home/shasankgunturu/Desktop/b90.png")
         # frame.resize(480,640)
         cv2.imshow("bruh", frame)
         cv2.waitKey(1)
