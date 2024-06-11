@@ -31,7 +31,6 @@ public:
         center_subscriber = nh.subscribe<geometry_msgs::Vector3>("/docking/center", 1, &Docking24::center_callback, this);
         docking_status = nh.advertise<geometry_msgs::Vector3>("/docking/status", 1);
         telemetry_sub = nh.subscribe<custom_msgs::telemetry>("/master/telemetry", 1, &Docking24::telemetryCallback, this);
-        // commands_sub            = nh.subscribe<custom_msgs::commands>("/master/commands", 1, &Docking24::commandsCallback, this);
         heading_sub = nh.subscribe<std_msgs::Float32>("/mira/heading", 1, &Docking24::headingCallback, this);
         error_pub = nh.advertise<geometry_msgs::Quaternion>("/docking/errors", 1);
         yaw_lock = nh.advertiseService("/yaw/lock", &Docking24::emptyYawServiceCallback, this);
@@ -122,22 +121,17 @@ private:
         int no_of_arucos_detected = msg->data.size() / 4, buffer_X, buffer_Y;
         float forward_error, lateral_error, heading_error;
         float min_distance = 999999;
-        // if ((no_of_arucos_detected==1) && (msg->data[0]==0)) {
-        //     forward_error = 50;
-        // }
-        // else {
-            for (int i = 0; i < no_of_arucos_detected; i++)
+        for (int i = 0; i < no_of_arucos_detected; i++)
+        {
+            forward_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 2] + 240);
+            lateral_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 3] + 320);
+            if (min_distance > sqrt(forward_error * forward_error + lateral_error * lateral_error))
             {
-                forward_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 2] + 240);
-                lateral_error = 100 + (-1 * msg->data[i * no_of_arucos_detected + 3] + 320);
-                if (min_distance > sqrt(forward_error * forward_error + lateral_error * lateral_error))
-                {
-                    min_distance = sqrt(forward_error * forward_error + lateral_error * lateral_error);
-                    marked_aruco = msg->data[i * no_of_arucos_detected];
-                    marked_index = i;
-                }
+                min_distance = sqrt(forward_error * forward_error + lateral_error * lateral_error);
+                marked_aruco = msg->data[i * no_of_arucos_detected];
+                marked_index = i;
             }
-        // }
+        }
 
         // Setting x, y delta for center lock
         std::vector<std::vector<int>> buffer{{100, 100}, {100, -100}, {-100, -100}, {-100, 100}};
@@ -164,7 +158,7 @@ private:
             forward_error = buffer_X + (-1 * msg->data[marked_index * no_of_arucos_detected + 2] + 240);
             lateral_error = buffer_Y + (-1 * msg->data[marked_index * no_of_arucos_detected + 3] + 320);
 
-            if (yaw_locked == false && armed == true)
+            if (yaw_locked == false)
             {
                 heading_error = msg->data[marked_index * no_of_arucos_detected + 1];
 
@@ -180,7 +174,7 @@ private:
             else
             {
                 // Comment the below if condition to disable center lock
-                if (sqrt(forward_error * forward_error) <= distance_threshold && sqrt(lateral_error * lateral_error) <= distance_threshold)
+                if (sqrt(forward_error * forward_error) <= distance_threshold && sqrt(lateral_error * lateral_error) <= distance_threshold && center_called==false)
                 {
                     center_called = true;
                     ROS_INFO("Center Lock is Enabled");
@@ -210,7 +204,7 @@ private:
     {
         float forward_error, lateral_error, heading_error, depth_error;
 
-        if (center_called == true)
+        if (center_called == true && armed==true)
         {
             forward_error = (-1 * msg->y + 240);
             lateral_error = (-1 * msg->x + 320);
@@ -264,62 +258,38 @@ private:
                 // {
                 //     depth_error = 1095 - depth_reading;
                 // }
-                // else if (depth_reading > 1095 && depth_reading <= 1105)
-                // {
-                //     depth_error = 1105 - depth_reading;
-                // }
-                // else if (depth_reading > 1105 && depth_reading <= 1115)
-                // {
-                //     depth_error = 1115 - depth_reading;
-                // }
-                // else if (depth_reading > 1115 && depth_reading <= 1125)
-                // {
-                //     depth_error = 1125 - depth_reading;
-                // }
-                // else if (depth_reading > 1125 && depth_reading <= 1135)
-                // {
-                //     depth_error = 1135 - depth_reading;
-                // }
-                // else if (depth_reading > 1135 && depth_reading <= 1145)
-                // {
-                //     depth_error = 1145 - depth_reading;
-                // }
-                else if (depth_reading > 1145 && depth_reading <= 1155)
+                else if (depth_reading > 1100 && depth_reading <= 1115)
                 {
-                    depth_error = 1155 - depth_reading;
+                    depth_error = 1115 - depth_reading;
                 }
-                else if (depth_reading > 1155 && depth_reading <= 1165)
+                else if (depth_reading > 1115 && depth_reading <= 1130)
                 {
-                    depth_error = 1165 - depth_reading;
+                    depth_error = 1130 - depth_reading;
                 }
-                else if (depth_reading > 1165 && depth_reading <= 1175)
+                else if (depth_reading > 1130 && depth_reading <= 1145)
+                {
+                    depth_error = 1145 - depth_reading;
+                }
+                else if (depth_reading > 1145 && depth_reading <= 1160)
+                {
+                    depth_error = 1160 - depth_reading;
+                }
+                else if (depth_reading > 1160 && depth_reading <= 1175)
                 {
                     depth_error = 1175 - depth_reading;
                 }
-                else if (depth_reading > 1175 && depth_reading <= 1185)
+                else if (depth_reading > 1175 && depth_reading <= 1190)
                 {
-                    depth_error = 1185 - depth_reading;
+                    depth_error = 1190 - depth_reading;
                 }
-                else if (depth_reading > 1185 && depth_reading <= 1195)
+                else if (depth_reading > 1205 && depth_reading <= 1220)
                 {
-                    depth_error = 1195 - depth_reading;
+                    depth_error = 1220 - depth_reading;
                 }
-                else if (depth_reading > 1195 && depth_reading <= 1205)
-                {
-                    depth_error = 1205 - depth_reading;
-                }
-                else if (depth_reading > 1205 && depth_reading <= 1215)
-                {
-                    depth_error = 1215 - depth_reading;
-                }
-                else if (depth_reading > 1215 && depth_reading <= 1225)
-                {
-                    depth_error = 1225 - depth_reading;
-                }
-                else if (depth_reading > 1225 && depth_reading <= 1235)
-                {
-                    depth_error = 1234 - depth_reading;
-                }
+                // else if (depth_reading > 1220 && depth_reading <= 1234)
+                // {
+                //     depth_error = 1234 - depth_reading;
+                // }
                 else
                 {
                     depth_error = dock_pressure - depth_reading;
@@ -372,17 +342,12 @@ private:
         docking_status.publish(p);
     }
 
-    // void commandsCallback(const custom_msgs::commands::ConstPtr& msg) {
-
-    // }
-
     /* Heading Callback
         Updates the current heading reading.
     */
     void headingCallback(const std_msgs::Float32::ConstPtr &msg)
     {
         heading_reading = msg->data;
-        // std::cout << "heafi: " << heading_reading<<std::endl;
     }
 };
 

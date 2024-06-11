@@ -172,7 +172,7 @@ int main(int argc, char **argv) {
                 cmd_pwm.thrust              = pid_depth;
                 cmd_pwm.yaw                 = pid_yaw;
 
-                if (subs.depth_external>1100) {
+                if (subs.depth_external>1225) {
                     cmd_pwm.forward         = 1500;
                     cmd_pwm.lateral         = 1500;
                 }
