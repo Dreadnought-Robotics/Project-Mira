@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(mira_inspection)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++17)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -138,6 +138,8 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(inspect src/main.cpp)
 target_link_libraries(inspect  ${catkin_LIBRARIES})
+add_executable(perceive src/perceive_pipe.cpp)
+target_link_libraries(perceive  ${catkin_LIBRARIES})
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use

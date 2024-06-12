@@ -23,17 +23,24 @@ class Inspect {
         bool            armed;
         void perceiveCallback(const geometry_msgs::Vector3::ConstPtr &msg) {
             float forward_error, lateral_error, heading_pipeline, depth_error, heading_error;
+            // std::cout << "bruh" << std::endl;
             if (armed == true) {
+            std::cout << "bruh" << std::endl;
+
                 heading_pipeline = msg->z;
                 if (heading_pipeline>THRESHOLD_CLOCKWISE && heading_pipeline<90) {
-                    forward_error = (msg->x)*(-1)+240;
-                    lateral_error = 500;
+                    forward_error = (msg->y)*(-1)+240;
+                    lateral_error = -50;
+                }
+                else if (heading_pipeline>90 && heading_pipeline<120) {
+                    forward_error = (msg->y)*(-1)+240;
+                    lateral_error = 50;
                 }
                 else {
-                    lateral_error = (msg->y)*(-1)+320;
-                    forward_error = 500;
+                    lateral_error = (msg->x)*(-1)+320;
+                    forward_error = 50;
                 }
-                depth_error = 1234 - depth_reading;
+                depth_error = 1350 - depth_reading;
                 heading_error = 90 - heading_reading;
                 if (heading_error < -180)
                     heading_error = heading_error + 360;
