@@ -8,13 +8,14 @@ aruco_set = set()
 
 def collecterCallback(msg):
     global aruco_set
-    no_of_arucos = len(msg.data) // 4
+    no_of_arucos = len(msg.data) // 1
 
     if no_of_arucos == 1:
         aruco_id = msg.data[0]
 
         l = len(aruco_set)
-        aruco_set.add(aruco_id)
+        if aruco_id > 0 and aruco_id < 100:
+            aruco_set.add(aruco_id)
 
         if len(aruco_set) > l:
             rospy.loginfo(f"Aruco ID Detected {aruco_id}")

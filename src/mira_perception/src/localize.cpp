@@ -194,49 +194,50 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr &msg)
         std_msgs::Float32MultiArray f, p;
         std::vector<float> aruco;
 
-        for (int i = 0; i < marker_IDs.size(); i++)
-        {
-            for (int j = 0; j < aruco_class_vector.size(); j++)
-            {
-                aruco_class_vector[j].frame = frame;
+        // for (int i = 0; i < marker_IDs.size(); i++)
+        // {
+        //     for (int j = 0; j < aruco_class_vector.size(); j++)
+        //     {
+        //         aruco_class_vector[j].frame = frame;
 
-                if (aruco_class_vector[j].id == marker_IDs[i])
-                {
-                    aruco_class_vector[j].marker_corners = marker_corners[i];
-                    aruco_class_vector[j].tVec = tVec[i];
-                    aruco_class_vector[j].rVec = rVec[i];
-                    aruco_class_vector[j].forward();
-                    f.data.push_back(marker_IDs[i]);
-                    f.data.push_back(aruco_class_vector[j].roll);
-                    f.data.push_back(aruco_class_vector[j].pitch);
-                    f.data.push_back(aruco_class_vector[j].yaw);
+        //         if (aruco_class_vector[j].id == marker_IDs[i])
+        //         {
+        //             aruco_class_vector[j].marker_corners = marker_corners[i];
+        //             aruco_class_vector[j].tVec = tVec[i];
+        //             aruco_class_vector[j].rVec = rVec[i];
+        //             aruco_class_vector[j].forward();
+        //             f.data.push_back(marker_IDs[i]);
+        //             f.data.push_back(aruco_class_vector[j].roll);
+        //             f.data.push_back(aruco_class_vector[j].pitch);
+        //             f.data.push_back(aruco_class_vector[j].yaw);
 
-                    for (int k = 0; k < 3; k++)
-                    {
-                        f.data.push_back(aruco_class_vector[j].world_coordinates[k]);
-                    }
+        //             for (int k = 0; k < 3; k++)
+        //             {
+        //                 f.data.push_back(aruco_class_vector[j].world_coordinates[k]);
+        //             }
 
-                    p.data.push_back(marker_IDs[i]);
-                    p.data.push_back(aruco_class_vector[j].yaw);
-                    p.data.push_back(aruco_class_vector[j].pix_y);
-                    p.data.push_back(aruco_class_vector[j].pix_x);
-                    found = true;
-                    break;
-                }
-            }
+        //             p.data.push_back(marker_IDs[i]);
+        //             p.data.push_back(aruco_class_vector[j].yaw);
+        //             p.data.push_back(aruco_class_vector[j].pix_y);
+        //             p.data.push_back(aruco_class_vector[j].pix_x);
+        //             found = true;
+        //             break;
+        //         }
+        //     }
+            p.data.push_back(marker_IDs[0]);
 
-            if (found == true)
-            {
+            // if (found == true)
+            // {
                 aruco_first_detection = true;
                 ROS_INFO("ARUCO FOUND");
-            }
-            else
-            {
-                ROS_WARN("INVALID ARUCO ID FOUND");
-            }
-        }
+            // }
+            // else
+            // {
+            //     ROS_WARN("INVALID ARUCO ID FOUND");
+            // }
+        // }
 
-        waypoint_publisher.publish(f);
+        // waypoint_publisher.publish(f);
         pixel_publisher.publish(p);
     }
     else {
@@ -267,7 +268,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     // ROS Subscribers
-    ros::Subscriber image_subscriber = nh.subscribe("/camera_down/enhanced", 1, imageCallback);
+    ros::Subscriber image_subscriber = nh.subscribe("/camera_down/image_enhanced", 1, imageCallback);
     ros::Subscriber depth_subscriber = nh.subscribe("/master/telemetry", 1, depthCallback);
 
     // ROS Publishers
