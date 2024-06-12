@@ -240,15 +240,15 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr &msg)
         pixel_publisher.publish(p);
     }
     else {
-        std_msgs::Float32MultiArray p;
-        if (aruco_first_detection==false){
-            ROS_WARN("NO ARUCO DETECTED YET");
-            p.data.push_back(99);
-            p.data.push_back(0);
-            p.data.push_back(0);
-            p.data.push_back(0);
-            pixel_publisher.publish(p);
-        }
+        // std_msgs::Float32MultiArray p;
+        // if (aruco_first_detection==false){
+        //     ROS_WARN("NO ARUCO DETECTED YET");
+        //     p.data.push_back(99);
+        //     p.data.push_back(0);
+        //     p.data.push_back(0);
+        //     p.data.push_back(0);
+        //     pixel_publisher.publish(p);
+        // }
     }
 
     int center_x = width / 2;
@@ -267,7 +267,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     // ROS Subscribers
-    ros::Subscriber image_subscriber = nh.subscribe("/camera_down/image_raw/compressed", 1, imageCallback);
+    ros::Subscriber image_subscriber = nh.subscribe("/camera_down/enhanced", 1, imageCallback);
     ros::Subscriber depth_subscriber = nh.subscribe("/master/telemetry", 1, depthCallback);
 
     // ROS Publishers

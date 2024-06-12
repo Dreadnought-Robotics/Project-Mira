@@ -53,25 +53,25 @@ def callback(msg):
     # Sleep for a short time to control the publishing rate
 
 
-def pressure_callback(msg, depth_publisher):
+def pressure_callback(msg):
     ext_pressure = msg.external_pressure
     depth = -((ext_pressure - surface_reading) * depth_constant)
     f = Float64()
     f.data = depth
-    depth_pub.publish(depth)
+    # depth_pub.publish(depth)
 
 
 if __name__ == "__main__":
-    rospy.init_node("translator_node")
+    rospy.init_node("translator_node_f")
     enhanced_publisher = rospy.Publisher(
-        "/camera_down/image_enhanced", CompressedImage, queue_size=10
+        "/camera_front/image_enhanced", CompressedImage, queue_size=10
     )
     # info_publisher = rospy.Publisher('/camera/info', Image, queue_size=10)
-    rospy.Subscriber("camera_down/image_raw/compressed", CompressedImage, callback)
+    rospy.Subscriber("camera_front/image_raw/compressed", CompressedImage, callback)
 
-    depth_pub = rospy.Publisher("/master/depth", Float64, queue_size=1)
+    # depth_pub = rospy.Publisher("/master/depth", Float64, queue_size=1)
 
     ext_pressure_sub = rospy.Subscriber(
-        "/master/telemetry", telemetry, pressure_callback, depth_pub
+        "/master/telemetry", telemetry, pressure_callback
     )
     rospy.spin()

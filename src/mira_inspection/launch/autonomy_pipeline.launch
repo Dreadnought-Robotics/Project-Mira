@@ -1,0 +1,6 @@
+<launch>
+  <node name="perception_pipe" pkg="mira_inspection" type="perceive_pipe.py" output="screen"/>
+  <node name="inspect" pkg="mira_inspection" type="inspect" output="screen"/>
+  <!-- <node name="enhance_bot" pkg="mira_inspection" type="image_and_depth_translator.py" output="screen"/> -->
+  <!-- <node pkg="mira_perception" type="camera_sub1" name="camera_sub1" output="screen"/> -->
+</launch>

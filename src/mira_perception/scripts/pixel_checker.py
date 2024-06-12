@@ -10,7 +10,7 @@ class ImageSubscriber:
     def __init__(self):
         rospy.init_node('image_subscriber', anonymous=True)
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber("/camera_down/image_raw/compressed", CompressedImage, self.image_callback)
+        self.image_sub = rospy.Subscriber("/camera_down/enhanced", CompressedImage, self.image_callback)
         self.image = None
 
 

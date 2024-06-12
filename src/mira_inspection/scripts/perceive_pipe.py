@@ -7,9 +7,12 @@ import rospy
 from std_msgs.msg import Float32MultiArray
 from cv_bridge import CvBridge
 from sensor_msgs.msg import CompressedImage
-
+from geometry_msgs.msg import Vector3
+# global lower_rgb
+# global upper_rgb
 bridge = CvBridge()
-
+lower_rgb = (0, 0, 0)
+upper_rgb = (255, 255, 255)
 def CLAHE(image):
     if len(image.shape) == 3:
         gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -56,9 +59,7 @@ def Angle_Normalize(angle):
 
 def Masking(image):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    lower_bound = np.array([0, 40, 50])
-    upper_bound = np.array([60, 255, 255])
-    mask = cv2.inRange(image, lower_bound, upper_bound)
+    mask = cv2.inRange(image, lower_rgb, upper_rgb)
     new_img = cv2.bitwise_and(image, image, mask=mask)
     new_img = cv2.GaussianBlur(new_img, (55, 55), 0)
     kernel = np.array([[-1,-1,-1], [-1,99,-1], [-1,-1,-1]])
@@ -113,9 +114,6 @@ def main_Callback(msg, pub):
     part_height = height // 3
 
 
-    lower_rgb = (120, 120, 0)
-    upper_rgb = (200, 200, 60)
-
     img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     lower_threshold = np.array(lower_rgb, dtype=np.uint8)
@@ -163,9 +161,12 @@ def main_Callback(msg, pub):
 
         Angle_diff = abs(avg1 - avg2)
         print(Angle_diff)
-        
-        message = Float32MultiArray(data=[cx, cy, Angle_diff])   #------------------------------------------------
-        pub.publish(message)
+        m = Vector3()
+        m.x = cx
+        m.y = cy
+        m.z = Angle_diff
+   #------------------------------------------------
+        pub.publish(m)
 
         # if cv2.waitKey(1) & 0xFF == ord('q'):
         #     break
@@ -173,8 +174,9 @@ def main_Callback(msg, pub):
 if __name__ == '__main__':
     try:
         rospy.init_node('angle_publisher', anonymous=True)
-        pub = rospy.Publisher('average_angles', Float32MultiArray, queue_size=10)
-        rospy.Subscriber("/camera_down/image_raw/compressed", CompressedImage, main_Callback, pub)
+        pub = rospy.Publisher('/pipeline/errors', Vector3, queue_size=10)
+        rospy.Subscriber("/camera_down/image_enhanced", CompressedImage, main_Callback, pub)
+        print("Ff")
         rospy.spin()
     except rospy.ROSInterruptException:
         pass

@@ -1,7 +1,11 @@
 #!/usr/bin/python3
 
 import cv2
+from cv_bridge import CvBridge
+import rospy
+from sensor_msgs.msg import CompressedImage
 
+bridge = CvBridge()
 # Global variable to store the current mouse position
 current_x, current_y = -1, -1
 
@@ -16,17 +20,8 @@ def mouse_callback(event, x, y, flags, param):
     global current_x, current_y
     if event == cv2.EVENT_MOUSEMOVE:  # Mouse move event
         current_x, current_y = x, y
-
-# Initialize the webcam
-cap = cv2.VideoCapture(0)
-
-cv2.namedWindow('Frame')
-cv2.setMouseCallback('Frame', mouse_callback)
-
-while True:
-    # Capture frame-by-frame
-    ret, frame = cap.read()
-
+def img_callback(msg):
+    frame = bridge.compressed_imgmsg_to_cv2(msg, desired_encoding="bgr8")
     # Check if the coordinates are valid
     if 0 <= current_x < frame.shape[1] and 0 <= current_y < frame.shape[0]:
         # Get RGB values of the pixel
@@ -36,11 +31,17 @@ while True:
     # Display the resulting frame
     cv2.imshow('Frame', frame)
 
-    # Wait for a key press and check if it's 'q' to quit
-    key = cv2.waitKey(1)
-    if key == ord('q'):
-        break
+if __name__ ==  "__main__":
+    rospy.init_node("picker")
+    rospy.Subscriber("/camera_down/image_enhanced", CompressedImage, img_callback)
+    rospy.spin()
 
-# When everything is done, release the capture and close windows
-cap.release()
-cv2.destroyAllWindows()
+# Initialize the webcam
+# cap = cv2.VideoCapture(0)
+
+# cv2.namedWindow('Frame')
+# cv2.setMouseCallback('Frame', mouse_callback)
+
+# # When everything is done, release the capture and close windows
+# cap.release()
+# cv2.destroyAllWindows()

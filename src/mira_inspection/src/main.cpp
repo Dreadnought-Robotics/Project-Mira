@@ -12,6 +12,7 @@ class Inspect {
             error_pub = nh.advertise<geometry_msgs::Quaternion>("/docking/errors", 1);
             telemetry_sub = nh.subscribe<custom_msgs::telemetry>("/master/telemetry", 1, &Inspect::telemetryCallback, this);
             heading_sub = nh.subscribe<std_msgs::Float32>("/mira/heading", 1, &Inspect::headingCallback, this);
+            ros::spin();
         }
     private:
         ros::Subscriber pipe_perception;

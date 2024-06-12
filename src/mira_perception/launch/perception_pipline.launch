@@ -1,0 +1,6 @@
+<launch>
+  <node name="localizer" pkg="mira_perception" type="localizer" output="screen"/>
+  <node name="enhance_top" pkg="mira_perception" type="image_and_depth_front.py" output="screen"/>
+  <node name="enhance_bot" pkg="mira_perception" type="image_and_depth_translator.py" output="screen"/>
+  <!-- <node pkg="mira_perception" type="camera_sub1" name="camera_sub1" output="screen"/> -->
+</launch>
