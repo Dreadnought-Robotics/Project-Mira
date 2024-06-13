@@ -159,9 +159,10 @@ private:
             if (msg->data[marked_index * no_of_arucos_detected] == marked_aruco && center_called == false && armed==true)
             {
                 // ROS_INFO("Marked Aruco: %d, X: %f, Y: %f", marked_aruco, -1*msg->data[marked_index*no_of_arucos_detected + 2] + 240, -1*msg->data[marked_index*no_of_arucos_detected + 3] + 320);
-                forward_error = buffer_X + (-1 * msg->data[marked_index * no_of_arucos_detected + 2] + 240);
-                lateral_error = buffer_Y + (-1 * msg->data[marked_index * no_of_arucos_detected + 3] + 320);
-
+                // forward_error = buffer_X + (-1 * msg->data[marked_index * no_of_arucos_detected + 2] + 240);
+                // lateral_error = buffer_Y + (-1 * msg->data[marked_index * no_of_arucos_detected + 3] + 320);
+                forward_error = (-1 * msg->data[marked_index * no_of_arucos_detected + 2] + 240);
+                lateral_error = (-1 * msg->data[marked_index * no_of_arucos_detected + 3] + 320);
                 if (yaw_locked == false)
                 {
                     heading_error = msg->data[marked_index * no_of_arucos_detected + 1];

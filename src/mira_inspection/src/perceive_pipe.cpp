@@ -6,7 +6,7 @@
 #include <numeric>  // Add this line for std::accumulate
 // Global variables for color range
 cv::Scalar lower_rgb(0, 0, 0);
-cv::Scalar upper_rgb(30, 100, 255);
+cv::Scalar upper_rgb(180, 180, 150);
 
 // Function to apply CLAHE
 cv::Mat CLAHE(const cv::Mat &image) {
@@ -95,12 +95,13 @@ cv::Mat Masking(const cv::Mat &image) {
 std::pair<cv::Mat, double> Make_Hough_Lines(const cv::Mat &image) {
     cv::Mat gray_image, edges;
     cv::cvtColor(image, gray_image, cv::COLOR_BGR2GRAY);
+    cv::GaussianBlur(gray_image, gray_image, cv::Size(55, 55), 0);
     cv::Mat sobel_x, sobel_y;
     cv::Sobel(gray_image, sobel_x, CV_64F, 1, 0, 3);
     cv::Sobel(gray_image, sobel_y, CV_64F, 0, 1, 3);
     cv::Mat gradient_magnitude;
     cv::sqrt(sobel_x.mul(sobel_x) + sobel_y.mul(sobel_y), gradient_magnitude);
-    cv::threshold(gradient_magnitude, edges, 190, 255, cv::THRESH_BINARY);
+    cv::threshold(gradient_magnitude, edges, 50, 255, cv::THRESH_BINARY);
     edges.convertTo(edges, CV_8U);
 
     std::vector<cv::Vec2f> lines;
@@ -135,8 +136,8 @@ void main_Callback(const sensor_msgs::CompressedImageConstPtr &msg, const ros::P
 
     cv::Mat img_rgb;
     cv::cvtColor(frame, img_rgb, cv::COLOR_BGR2RGB);
-    cv::Scalar lower_rgb(0, 0, 0);
-    cv::Scalar upper_rgb(255, 100, 30);
+cv::Scalar lower_rgb(150, 150, 150);
+cv::Scalar upper_rgb(255, 255, 255);
     cv::Mat mask;
     cv::inRange(img_rgb, lower_rgb, upper_rgb, mask);
     std::vector<std::vector<cv::Point>> contours;

@@ -40,8 +40,8 @@ class Inspect {
                     lateral_error = (msg->x)*(-1)+320;
                     forward_error = 50;
                 }
-                depth_error = 1350 - depth_reading;
-                heading_error = 90 - heading_reading;
+                depth_error = 1325 - depth_reading;
+                heading_error = -30 - heading_reading;
                 if (heading_error < -180)
                     heading_error = heading_error + 360;
                 else if (heading_error > 180)

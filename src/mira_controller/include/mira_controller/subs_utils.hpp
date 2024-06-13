@@ -39,7 +39,7 @@ private:
         // yaw_error               = 0;
         // forward_error           = 0;
         // lateral_error           = 0;
-        // depth_error             = 1025 - depth_external;
+        depth_error             = 1040 - depth_external;
         // std::cout << depth_error << std::endl;
     }
     void statusCallback(const geometry_msgs::Vector3::ConstPtr &msg)
@@ -56,7 +56,7 @@ private:
         // {
         //     reseting = false;
         // }
-        // depth_error             = 1025 - depth_external;
+        depth_error             = 1040 - depth_external;
     }
     void rovCallback(const custom_msgs::commands msg)
     {

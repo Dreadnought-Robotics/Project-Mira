@@ -61,7 +61,7 @@ class controller{
             // int sensitivity_switch = msg->buttons[2];
             int pitch_button       = msg->buttons[2];        
             int mode_stabilise     = msg->buttons[1];
-            int mode_acro          = msg->buttons[9];
+            int mode_acro          = msg->buttons[7];
             int mode_manual        = msg->buttons[3];
             int mode_depth_hold    = msg->buttons[6]; // pixhawk depth hold
             int mira_switch        = msg->buttons[8];
@@ -190,7 +190,7 @@ class controller{
                 }
             }
             if (pitch_button==1) {
-                msg_to_pub.pitch = 1700;
+                msg_to_pub.pitch = 1400;
             }
             else {
                 msg_to_pub.pitch = 1500;
