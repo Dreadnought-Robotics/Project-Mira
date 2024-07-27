@@ -7,7 +7,6 @@
 #include <sensor_msgs/CompressedImage.h>
 #include <cv_bridge/cv_bridge.h>
 #include <std_msgs/Float32MultiArray.h>
-#include <geometry_msgs/Vector3.h>
 #include <eigen3/Eigen/Dense>
 
 // Predefined Variables
@@ -17,20 +16,10 @@
 #define IDBOTTOMRIGHT 96
 #define WAYPOINT_DISTANCE 15
 #define MARKER_SIZE 15
-#define width 640
-#define height 480
+#define WIDTH 640
+#define HEIGHT 480
 
-/*
-   28    80cm      7
-   120cm
-   19              96   -------->X
-   diagonal = 72.111cm
-//640 front
-// cv::Mat camera_matrix                                   = (cv::Mat_<double>(3, 3) << 664.7437142005466, 0.0, 315.703082526844, 0.0, 669.5841391770296, 252.84811434264267, 0.0, 0.0, 1.0);
-// cv::Mat distortion_coefficients                         = (cv::Mat_<double>(1, 5) << -0.4812806594873973, 0.2745181609001952, 0.004042548280670333, -0.006039934872833289, 0.0);
-*/
-
-// Global Camera Instrinsic Values (640x480)
+// Global Camera Intrinsic Values (640x480)
 cv::Mat camera_matrix = (cv::Mat_<double>(3, 3) << 655.3957567464429, 0.0, 309.229468237061, 0.0, 658.8623421039053, 223.74985228853447, 0.0, 0.0, 1.0);
 cv::Mat distortion_coefficients = (cv::Mat_<double>(1, 5) << -0.43734277106914093, 0.20874340537321745, 0.0018488828869952143, 0.0009235703079396009, 0.0);
 
@@ -39,30 +28,34 @@ cv::Ptr<cv::aruco::Dictionary> marker_dict = cv::aruco::getPredefinedDictionary(
 cv::Ptr<cv::aruco::DetectorParameters> param_markers = cv::aruco::DetectorParameters::create();
 
 // ROS Publishers Declarations
-ros::Publisher waypoint_publisher, pixel_publisher, docking_center_publisher;
+ros::Publisher waypoint_publisher, pixel_publisher;
 cv_bridge::CvImagePtr cv_ptr;
 
 bool aruco_first_detection = false;
 
+/**
+ * @brief Class for handling Aruco marker detection and pose estimation.
+ */
 class Aruco
 {
 public:
-    // Class variable declarations
     int id;
-    float roll, pitch, yaw; // pose
+    float roll, pitch, yaw;
     std::vector<cv::Point2f> marker_corners;
     cv::Vec3d rVec, tVec;
     std::vector<float> world_coordinates;
     cv::Mat frame;
     int pix_y, pix_x;
 
-    // Constructor to set the Aruco Marker ID
-    Aruco(int marker_id)
-    {
-        id = marker_id;
-    }
+    /**
+     * @brief Constructor to initialize Aruco marker with a specific ID.
+     * @param marker_id ID of the Aruco marker
+     */
+    Aruco(int marker_id) : id(marker_id) {}
 
-    // Method to set x and y coordinate values from Aruco
+    /**
+     * @brief Calculates the marker center and its world coordinates.
+     */
     void forward()
     {
         world_coordinates.clear();
@@ -83,28 +76,40 @@ public:
     }
 
 private:
-    // Helper function to convert Euler angles to Quaternion
+    /**
+     * @brief Converts Euler angles to Quaternion.
+     * @param x Quaternion x component
+     * @param y Quaternion y component
+     * @param z Quaternion z component
+     * @param w Quaternion w component
+     * @param roll Output roll angle
+     * @param pitch Output pitch angle
+     * @param yaw Output yaw angle
+     */
     void euler_from_quaternion(double x, double y, double z, double w, double &roll, double &pitch, double &yaw)
     {
-        // roll (x-axis rotation)
+        // Roll (x-axis rotation)
         double sinr_cosp = +2.0 * (w * x + y * z);
         double cosr_cosp = +1.0 - 2.0 * (x * x + y * y);
         roll = atan2(sinr_cosp, cosr_cosp);
 
-        // pitch (y-axis rotation)
+        // Pitch (y-axis rotation)
         double sinp = +2.0 * (w * y - z * x);
-        if (fabs(sinp) >= 1)
-            pitch = copysign(M_PI / 2, sinp);
-        else
-            pitch = asin(sinp);
+        pitch = (fabs(sinp) >= 1) ? copysign(M_PI / 2, sinp) : asin(sinp);
 
-        // yaw (z-axis rotation)
+        // Yaw (z-axis rotation)
         double siny_cosp = +2.0 * (w * z + x * y);
         double cosy_cosp = +1.0 - 2.0 * (y * y + z * z);
-        yaw = atan((-1 * siny_cosp) / (-1 * cosy_cosp));
+        yaw = atan2(siny_cosp, cosy_cosp);
     }
 
-    // Helper function to convert 2D image coordinates to 3D world coordinates
+    /**
+     * @brief Converts 2D image coordinates to 3D world coordinates.
+     * @param center Image coordinates of the marker center
+     * @param rvec Rotation vector
+     * @param tvec Translation vector
+     * @return 3D world coordinates of the marker center
+     */
     cv::Mat getCornersInWorldFrame(cv::Point2f center, cv::Vec3d rvec, cv::Vec3d tvec)
     {
         cv::Mat translation_vector = cv::Mat::zeros(3, 1, CV_64F);
@@ -121,19 +126,11 @@ private:
             rot_mat.at<double>(2, 0), rot_mat.at<double>(2, 1), rot_mat.at<double>(2, 2);
 
         Eigen::Quaterniond quat(eigen_rotation_matrix);
-        double transform_rotation_x = quat.x();
-        double transform_rotation_y = quat.y();
-        double transform_rotation_z = quat.z();
-        double transform_rotation_w = quat.w();
         double roll_x, pitch_y, yaw_z;
-
-        euler_from_quaternion(transform_rotation_x, transform_rotation_y, transform_rotation_z, transform_rotation_w, roll_x, pitch_y, yaw_z);
-        roll_x = roll_x * 180 / CV_PI;
-        pitch_y = pitch_y * 180 / CV_PI;
-        yaw_z = yaw_z * 180 / CV_PI;
-        yaw = yaw_z;
-        roll = roll_x;
-        pitch = pitch_y;
+        euler_from_quaternion(quat.x(), quat.y(), quat.z(), quat.w(), roll_x, pitch_y, yaw_z);
+        yaw = yaw_z * 180 / CV_PI;
+        roll = roll_x * 180 / CV_PI;
+        pitch = pitch_y * 180 / CV_PI;
         cv::Mat pixels = cv::Mat::zeros(3, 1, CV_64F);
         pixels.at<double>(0) = center.x;
         pixels.at<double>(1) = center.y;
@@ -144,7 +141,7 @@ private:
     }
 };
 
-// Setting the Aruco IDs
+// Instantiate Aruco marker objects
 Aruco left_top(IDTOPLEFT);
 Aruco left_bottom(IDBOTTOMLEFT);
 Aruco right_bottom(IDBOTTOMRIGHT);
@@ -152,33 +149,32 @@ Aruco right_top(IDTOPRIGHT);
 float depth;
 std::vector<Aruco> aruco_class_vector{left_top, right_top, left_bottom, right_bottom};
 
-/* Depth Callback
-    Receives depth data from the telemetry topic and updates the global depth variable.
-*/
+/**
+ * @brief Callback to update the depth variable from telemetry data.
+ * @param msg Depth data message
+ */
 void depthCallback(const custom_msgs::telemetry::ConstPtr &msg)
 {
     depth = msg->external_pressure;
 }
 
-/* Image Callback
-    Processes the incoming image, detects ArUco markers, estimates their poses, and publishes their positions and orientations.
-*/
+/**
+ * @brief Callback to process image data, detect ArUco markers, and publish their positions and orientations.
+ * @param msg Compressed image message
+ */
 void imageCallback(const sensor_msgs::CompressedImageConstPtr &msg)
 {
     try
     {
         cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
     }
-
     catch (cv_bridge::Exception &e)
     {
         ROS_ERROR("cv_bridge exception: %s", e.what());
         return;
     }
 
-    // Variable Declarations
     cv::Mat frame = cv_ptr->image;
-    // cv::flip(frame_original, frame, -1);
     cv::Mat gray_frame;
     cv::cvtColor(frame, gray_frame, cv::COLOR_BGR2GRAY);
     std::vector<std::vector<cv::Point2f>> marker_corners;
@@ -192,75 +188,67 @@ void imageCallback(const sensor_msgs::CompressedImageConstPtr &msg)
         std::vector<cv::Vec3d> rVec, tVec;
         cv::aruco::estimatePoseSingleMarkers(marker_corners, MARKER_SIZE, camera_matrix, distortion_coefficients, rVec, tVec);
         std_msgs::Float32MultiArray f, p;
-        std::vector<float> aruco;
 
-        for (int i = 0; i < marker_IDs.size(); i++)
+        for (size_t i = 0; i < marker_IDs.size(); ++i)
         {
-            for (int j = 0; j < aruco_class_vector.size(); j++)
+            for (size_t j = 0; j < aruco_class_vector.size(); ++j)
             {
-                aruco_class_vector[j].frame = frame;
-
                 if (aruco_class_vector[j].id == marker_IDs[i])
                 {
+                    aruco_class_vector[j].frame = frame;
                     aruco_class_vector[j].marker_corners = marker_corners[i];
                     aruco_class_vector[j].tVec = tVec[i];
                     aruco_class_vector[j].rVec = rVec[i];
                     aruco_class_vector[j].forward();
-                    f.data.push_back(marker_IDs[i]);
-                    f.data.push_back(aruco_class_vector[j].roll);
-                    f.data.push_back(aruco_class_vector[j].pitch);
-                    f.data.push_back(aruco_class_vector[j].yaw);
 
-                    for (int k = 0; k < 3; k++)
-                    {
-                        f.data.push_back(aruco_class_vector[j].world_coordinates[k]);
-                    }
+                    f.data = {marker_IDs[i], aruco_class_vector[j].roll, aruco_class_vector[j].pitch, aruco_class_vector[j].yaw};
+                    f.data.insert(f.data.end(), aruco_class_vector[j].world_coordinates.begin(), aruco_class_vector[j].world_coordinates.end());
 
-                    p.data.push_back(marker_IDs[i]);
-                    p.data.push_back(aruco_class_vector[j].yaw);
-                    p.data.push_back(aruco_class_vector[j].pix_y);
-                    p.data.push_back(aruco_class_vector[j].pix_x);
+                    p.data = {marker_IDs[i], aruco_class_vector[j].yaw, static_cast<float>(aruco_class_vector[j].pix_y), static_cast<float>(aruco_class_vector[j].pix_x)};
+
+                    waypoint_publisher.publish(f);
+                    pixel_publisher.publish(p);
+
+                    aruco_first_detection = true;
+                    ROS_INFO("ARUCO FOUND");
                     found = true;
                     break;
                 }
             }
 
-            if (found == true)
-            {
-                aruco_first_detection = true;
-                ROS_INFO("ARUCO FOUND");
-            }
-            else
-            {
-                ROS_WARN("INVALID ARUCO ID FOUND");
-            }
+            if (found)
+                break;
         }
 
-        waypoint_publisher.publish(f);
+        if (!found)
+        {
+            ROS_WARN("INVALID ARUCO ID FOUND");
+        }
+    }
+    else
+    {
+        std_msgs::Float32MultiArray p;
+        if (!aruco_first_detection)
+        {
+            ROS_WARN("NO ARUCO DETECTED YET");
+            p.data = {99, 0, 0, 0};
+        }
         pixel_publisher.publish(p);
     }
-    else {
-        std_msgs::Float32MultiArray p;
-        if (aruco_first_detection==false){
-            ROS_WARN("NO ARUCO DETECTED YET");
-            p.data.push_back(99);
-            p.data.push_back(0);
-            p.data.push_back(0);
-            p.data.push_back(0);
-            pixel_publisher.publish(p);
-        }
-    }
 
-    int center_x = width / 2;
-    int center_y = height / 2;
-    cv::line(frame, cv::Point(300, center_y), cv::Point(width - 300, center_y), cv::Scalar(0, 255, 0), 2);
-    cv::line(frame, cv::Point(center_x, 220), cv::Point(center_x, height - 220), cv::Scalar(0, 255, 0), 2);
-    cv::imshow("rii", frame);
+    int center_x = WIDTH / 2;
+    int center_y = HEIGHT / 2;
+    cv::line(frame, cv::Point(300, center_y), cv::Point(WIDTH - 300, center_y), cv::Scalar(0, 255, 0), 2);
+    cv::line(frame, cv::Point(center_x, 220), cv::Point(center_x, HEIGHT - 220), cv::Scalar(0, 255, 0), 2);
+    cv::imshow("Aruco Detection", frame);
 }
 
-/* Main function
-    Initializes ROS node, subscribers, and publishers. Starts the ROS event loop.
-*/
+/**
+ * @brief Main function to initialize ROS node, subscribers, and publishers.
+ * @param argc Argument count
+ * @param argv Argument values
+ * @return 0 on successful execution
+ */
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "localizer_using_aruco");
